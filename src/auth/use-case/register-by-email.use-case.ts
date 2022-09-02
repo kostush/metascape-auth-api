@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { SuccessResponse } from 'metascape-common-api/dist';
+import { SuccessResponse } from 'metascape-common-api';
 import { RegisterResponseDataDto } from '../responses/register-response-data.dto';
 import { RegisterByEmailRequest } from '../requests/register-by-email.request';
 import {
   USERS_SERVICE_NAME,
   UsersServiceClient,
-} from 'metascape-user-api-client/dist';
+} from 'metascape-user-api-client';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()

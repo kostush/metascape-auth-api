@@ -4,7 +4,7 @@ import { RegisterByEmailController } from './controllers/register-by-email.contr
 import {
   UserApiClientFactory,
   USERS_SERVICE_NAME,
-} from 'metascape-user-api-client/dist';
+} from 'metascape-user-api-client';
 import PARAMETERS from '../params/params.constants';
 import { RegisterByEmailUseCase } from './use-case/register-by-email.use-case';
 import { RegisterByWalletController } from './controllers/register-by-wallet.controller';
@@ -16,6 +16,12 @@ import { LoginByEmailUseCase } from './use-case/login-by-email.use-case';
 import { JwtModule } from '@nestjs/jwt';
 import { ValidateUseCase } from './use-case/validate.use-case';
 import { ValidateController } from './controllers/validate.controller';
+import {
+  WalletApiClientFactory,
+  WALLETS_SERVICE_NAME,
+} from 'metascape-wallet-api-client';
+import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
+import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
 
 @Module({
   controllers: [
@@ -32,6 +38,17 @@ import { ValidateController } from './controllers/validate.controller';
         return UserApiClientFactory.create(userApiUrl);
       },
       inject: [PARAMETERS.USER_API_GRPC_URL],
+    },
+    {
+      provide: WALLETS_SERVICE_NAME,
+      useFactory: (walletApiUrl: string) => {
+        return WalletApiClientFactory.create(walletApiUrl);
+      },
+      inject: [PARAMETERS.WALLET_API_GRPC_URL],
+    },
+    {
+      provide: JwtPayloadFactoryInterface,
+      useClass: JwtPayloadFactoryService,
     },
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,

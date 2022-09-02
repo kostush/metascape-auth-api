@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
-import { SuccessResponse } from 'metascape-common-api/dist';
+import { SuccessResponse } from 'metascape-common-api';
 import { AUTH_SERVICE_NAME } from '../auth.pb';
 import { LoginByWalletRequest } from '../requests/login-by-wallet.request';
 import { LoginResponseDataDto } from '../responses/login-response-data.dto';
