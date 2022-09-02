@@ -37,9 +37,16 @@ export class LoginByEmailUseCase {
       }),
     );
 
-    // const walletsData = await this.walletsServiceClient.getWalletsByUserId(userData.data!.id);
+    const walletsData = await lastValueFrom(
+      this.walletsServiceClient.getWalletsByUserId({
+        userId: userData.data!.id,
+      }),
+    );
 
-    const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!, []);
+    const payload = this.jwtPayloadFactory.createJwtPayload(
+      userData.data!,
+      walletsData.data,
+    );
 
     const token = this.jwtService.sign(payload);
     return new SuccessResponse(new LoginResponseDataDto(token));

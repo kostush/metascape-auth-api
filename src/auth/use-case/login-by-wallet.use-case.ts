@@ -45,6 +45,7 @@ export class LoginByWalletUseCase {
       walletData.data!,
     ]);
     const token = this.jwtService.sign(payload);
+
     return new SuccessResponse(new LoginResponseDataDto(token));
   }
 }

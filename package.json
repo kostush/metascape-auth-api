@@ -36,7 +36,7 @@
     "joi": "^17.6.0",
     "metascape-common-api": "git+ssh://git@bitbucket.org:proj-metascape/metascape-common-api#0.3.0",
     "metascape-user-api-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-user-api-client#0.2.1",
-    "metascape-wallet-api-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-wallet-api-client#0.1.0",
+    "metascape-wallet-api-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-wallet-api-client#0.2.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"
