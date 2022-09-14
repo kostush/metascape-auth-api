@@ -62,3 +62,5 @@ $ npm run proto:mac
 The command require to have [proto](https://github.com/protocolbuffers/protobuf) command installed locally.
 ### Install proto
 For windows: https://www.geeksforgeeks.org/how-to-install-protocol-buffers-on-windows/
+
+For mac: `$ brew install protobuf`
