@@ -42,6 +42,7 @@
     "rxjs": "^7.2.0"
   },
   "devDependencies": {
+    "@alenon/grpc-mock-server": "^3.0.10",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",

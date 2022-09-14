@@ -10,17 +10,17 @@ export class JwtPayloadFactoryService implements JwtPayloadFactoryInterface {
     user: UserResponseData,
     wallets: WalletResponseData[],
   ): JwtPayloadDataDto {
-    return new JwtPayloadDataDto(
-      user.businessId,
-      user.id,
-      wallets.map((e) => e.address),
-      user.createdAt,
-      user.updatedAt,
-      user.email,
-      user.nickname,
-      user.firstName,
-      user.lastName,
-      user.about,
-    );
+    return {
+      businessId: user.businessId,
+      id: user.id,
+      wallets: wallets.map((e) => e.address),
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      email: user.email,
+      nickname: user.nickname,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      about: user.about,
+    };
   }
 }
