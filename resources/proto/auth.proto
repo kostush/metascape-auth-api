@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package metascape.auth;
+
+service AuthService {
+  rpc RegisterByWallet (RegisterByWalletRequest) returns (RegisterResponse) {}
+  rpc RegisterByEmail (RegisterByEmailRequest) returns (RegisterResponse) {}
+  rpc LoginByWallet (LoginByWalletRequest) returns (LoginResponse) {}
+  rpc LoginByEmail (LoginByEmailRequest) returns (LoginResponse) {}
+  rpc Validate (ValidateRequest) returns (ValidateResponse) {}
+}
+
+// RegisterByEmail
+message RegisterByEmailRequest {
+  string businessId = 1;
+  string email = 2;
+  string password = 3;
+}
+
+// RegisterByWallet
+message RegisterByWalletRequest {
+  string businessId = 1;
+  string address = 2;
+}
+
+message RegisterResponseData {
+  string userId = 1;
+}
+
+message RegisterResponse {
+  RegisterResponseData data = 1;
+}
+
+// LoginByWallet
+message LoginByWalletRequest {
+  string businessId = 1;
+  string address = 2;
+  string signature = 3;
+}
+
+message LoginResponseData {
+  string authToken = 1;
+}
+
+message LoginResponse {
+  LoginResponseData data = 1;
+}
+
+// LoginByEmail
+message LoginByEmailRequest {
+  string businessId = 1;
+  string email = 2;
+  string password = 3;
+}
+
+// Validate
+message ValidateRequest {
+  string authToken = 1;
+}
+
+message ValidateResponseData {
+  string businessId = 1;
+  string id = 2;
+  int64 createdAt = 9;
+  int64 updatedAt = 10;
+  repeated string wallets = 3;
+  optional string email = 4;
+  optional string nickname = 5;
+  optional string firstName = 6;
+  optional string lastName = 7;
+  optional string about = 8;
+}
+
+message ValidateResponse {
+  ValidateResponseData data = 1;
+}

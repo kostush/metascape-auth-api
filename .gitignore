@@ -7,6 +7,12 @@
 node_modules/
 dist/
 
+# Covarage
+coverage
+
+# Enviroment variables
+.env
+
 # Compiled Java class files
 *.class
 
