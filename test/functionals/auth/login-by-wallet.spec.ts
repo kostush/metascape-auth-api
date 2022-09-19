@@ -10,7 +10,7 @@ import { createGrpcClientHelper } from '../../helpers/create-grpc-client.helper'
 import { createMockUserServiceHelper } from '../../helpers/create-mock-user-service.helper';
 import { createMockWalletServiceHelper } from '../../helpers/create-mock-wallet-service.helper';
 import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
-import { GrpcExceptionFactory } from 'metascape-common-api';
+import { GrpcException, GrpcExceptionFactory } from 'metascape-common-api';
 import { GrpcMockServer } from '@alenon/grpc-mock-server';
 import { SignNonceRequest, WalletResponse } from 'metascape-wallet-api-client';
 import {
@@ -63,7 +63,11 @@ describe('Login by wallet functional tests', () => {
         call: ServerUnaryCall<SignNonceRequest, WalletResponse>,
         callback: sendUnaryData<WalletResponse>,
       ) => {
-        callback(null, walletMockResponse);
+        let error = null;
+        if (call.request.address !== walletMockResponse.data?.address) {
+          error = new GrpcException(status.NOT_FOUND, 'WalletNotFound', []);
+        }
+        callback(error, walletMockResponse);
       },
     });
     await walletService.start();
@@ -122,6 +126,25 @@ describe('Login by wallet functional tests', () => {
       expect(grpcException.message).toBe(BadRequestException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain('address');
+    }
+  });
+
+  it('should fail due to wallet not found error', async () => {
+    expect.hasAssertions();
+    try {
+      await lastValueFrom(
+        client.loginByWallet({
+          businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
+          address: '0x57D73c1896A339c866E6076e3c499F98840439C3',
+          signature: 'signature',
+        }),
+      );
+    } catch (e) {
+      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
+      expect(grpcException.code).toBe(status.NOT_FOUND);
+      expect(grpcException.message).toBe('WalletNotFound');
+      expect(grpcException.getErrors()).toBeInstanceOf(Array);
+      expect(grpcException.getErrors().length).toBe(0);
     }
   });
 

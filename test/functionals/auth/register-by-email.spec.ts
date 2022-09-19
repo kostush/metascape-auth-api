@@ -9,7 +9,7 @@ import { createMockAppHelper } from '../../helpers/create-mock-app.helper';
 import { createGrpcClientHelper } from '../../helpers/create-grpc-client.helper';
 import { createMockUserServiceHelper } from '../../helpers/create-mock-user-service.helper';
 import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
-import { GrpcExceptionFactory } from 'metascape-common-api';
+import { GrpcException, GrpcExceptionFactory } from 'metascape-common-api';
 import { GrpcMockServer } from '@alenon/grpc-mock-server';
 import { CreateUserRequest, UserResponse } from 'metascape-user-api-client';
 
@@ -22,6 +22,7 @@ describe('Register by email functional tests', () => {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
       id: 'c04e3560-930d-4ad2-8c53-f60b7746b81e',
+      email: 'exist@test.com',
       createdAt: 1661180246,
       updatedAt: 1661180246,
     },
@@ -42,7 +43,15 @@ describe('Register by email functional tests', () => {
         call: ServerUnaryCall<CreateUserRequest, UserResponse>,
         callback: sendUnaryData<UserResponse>,
       ) => {
-        callback(null, userMockResponse);
+        let error = null;
+        if (call.request.email === userMockResponse.data?.email) {
+          error = new GrpcException(
+            status.ALREADY_EXISTS,
+            'UserAlreadyExist',
+            [],
+          );
+        }
+        callback(error, userMockResponse);
       },
     });
     await userService.start();
@@ -108,6 +117,25 @@ describe('Register by email functional tests', () => {
       expect(grpcException.message).toBe(BadRequestException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain('password');
+    }
+  });
+
+  it('should fail due to the same email and business', async () => {
+    expect.hasAssertions();
+    try {
+      await lastValueFrom(
+        client.registerByEmail({
+          businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
+          email: 'exist@test.com',
+          password: 'password',
+        }),
+      );
+    } catch (e) {
+      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
+      expect(grpcException.code).toBe(status.ALREADY_EXISTS);
+      expect(grpcException.message).toBe('UserAlreadyExist');
+      expect(grpcException.getErrors()).toBeInstanceOf(Array);
+      expect(grpcException.getErrors().length).toBe(0);
     }
   });
 
