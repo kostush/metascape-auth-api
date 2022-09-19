@@ -97,7 +97,7 @@ describe('Login by wallet functional tests', () => {
       await lastValueFrom(
         client.loginByWallet({
           businessId: 'test',
-          address: '0x57D73c1896A339c866E6076e3c499F98840439C4',
+          address: walletMockResponse.data?.address as string,
           signature: 'signature',
         }),
       );
@@ -115,7 +115,7 @@ describe('Login by wallet functional tests', () => {
     try {
       await lastValueFrom(
         client.loginByWallet({
-          businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
+          businessId: walletMockResponse.data?.businessId as string,
           address: 'test',
           signature: 'signature',
         }),
@@ -134,7 +134,7 @@ describe('Login by wallet functional tests', () => {
     try {
       await lastValueFrom(
         client.loginByWallet({
-          businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
+          businessId: walletMockResponse.data?.businessId as string,
           address: '0x57D73c1896A339c866E6076e3c499F98840439C3',
           signature: 'signature',
         }),
@@ -151,8 +151,8 @@ describe('Login by wallet functional tests', () => {
   it('should login user successfully', async () => {
     const res = await lastValueFrom(
       client.loginByWallet({
-        businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
-        address: '0x57D73c1896A339c866E6076e3c499F98840439C4',
+        businessId: walletMockResponse.data?.businessId as string,
+        address: walletMockResponse.data?.address as string,
         signature: 'signature',
       }),
     );
