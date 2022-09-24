@@ -12,10 +12,14 @@ import { createMockWalletServiceHelper } from '../../helpers/create-mock-wallet-
 import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
 import { GrpcException, GrpcExceptionFactory } from 'metascape-common-api';
 import { GrpcMockServer } from '@alenon/grpc-mock-server';
-import { GetWalletsByUserIdRequest } from 'metascape-wallet-api-client';
-import { UserResponse } from 'metascape-user-api-client';
-import { GetUserByEmailAndPasswordRequest } from 'metascape-user-api-client/src/user.pb';
-import { WalletsResponse } from 'metascape-wallet-api-client/src/wallet.pb';
+import {
+  GetWalletsByUserIdRequest,
+  WalletsResponse,
+} from 'metascape-wallet-api-client';
+import {
+  UserResponse,
+  GetUserByEmailAndPasswordRequest,
+} from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDataDto } from '../../../src/auth/responses/jwt-payload-data.dto';
 

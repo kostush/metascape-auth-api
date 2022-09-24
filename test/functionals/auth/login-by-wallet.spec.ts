@@ -13,10 +13,7 @@ import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
 import { GrpcException, GrpcExceptionFactory } from 'metascape-common-api';
 import { GrpcMockServer } from '@alenon/grpc-mock-server';
 import { SignNonceRequest, WalletResponse } from 'metascape-wallet-api-client';
-import {
-  GetUserByIdRequest,
-  UserResponse,
-} from 'metascape-user-api-client/src/user.pb';
+import { GetUserByIdRequest, UserResponse } from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDataDto } from '../../../src/auth/responses/jwt-payload-data.dto';
 
