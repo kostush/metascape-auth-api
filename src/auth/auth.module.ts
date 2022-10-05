@@ -22,6 +22,8 @@ import {
 } from 'metascape-wallet-api-client';
 import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
 import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
+import { WalletResponseFactoryInterface } from './factory/wallet-response-factory.interface';
+import { WalletResponseFactory } from './factory/wallet-response-factory.service';
 
 @Module({
   controllers: [
@@ -49,6 +51,10 @@ import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interf
     {
       provide: JwtPayloadFactoryInterface,
       useClass: JwtPayloadFactoryService,
+    },
+    {
+      provide: WalletResponseFactoryInterface,
+      useClass: WalletResponseFactory,
     },
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,

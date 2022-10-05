@@ -126,6 +126,14 @@ describe('Register by wallet functional tests', () => {
         address: '0x57D73c1896A339c866E6076e3c499F98840439C4',
       }),
     );
-    expect(res.data?.userId).toBe(userMockResponse.data?.id);
+    expect(res.data?.userId).toBe(walletMockResponse.data?.userId);
+    expect(res.data?.id).toBe(walletMockResponse.data?.id);
+    expect(res.data?.businessId).toBe(walletMockResponse.data?.businessId);
+    expect(res.data?.address).toBe(walletMockResponse.data?.address);
+    expect(res.data?.nonce).toBe(walletMockResponse.data?.nonce);
+    expect(res.data?.createdAt).toBe(walletMockResponse.data?.createdAt);
+    expect(res.data?.updatedAt).toBe(walletMockResponse.data?.updatedAt);
+    expect(res.data?.createdBy).toBe(walletMockResponse.data?.createdBy);
+    expect(res.data?.updatedBy).toBe(walletMockResponse.data?.updatedBy);
   });
 });
