@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  auth:
+    container_name: auth
+    build:
+      context: .
+      target: production
+      dockerfile: ./docker/production/Dockerfile
+    networks:
+      - metascape
+      - default
+networks:
+  metascape:
+    name: metascape

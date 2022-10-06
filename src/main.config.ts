@@ -11,6 +11,8 @@ export const grpcConfigs: GrpcOptions = {
     protoPath: join(__dirname, '../resources/proto/auth.proto'),
     loader: {
       longs: Number,
+      arrays: true,
+      objects: true,
     },
   },
 };

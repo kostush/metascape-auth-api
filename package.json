@@ -11,16 +11,16 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:debug": "nest start --debug 0.0.0.0:9229 --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test,migration}/**/*.ts\"",
     "lint:fix": "eslint \"{src,apps,libs,test,migration}/**/*.ts\" --fix",
     "proto:win": "protoc --plugin=protoc-gen-ts_proto=.\\node_modules\\.bin\\protoc-gen-ts_proto.cmd -I=./resources/proto --ts_proto_opt=nestJs=true --ts_proto_out=src/auth resources/proto/auth.proto --ts_proto_opt=fileSuffix=.pb",
-    "proto:mac": "protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto -I=./resources/proto --ts_proto_opt=nestJs=true --ts_proto_out=src/auth resources/proto/auth.proto --ts_proto_opt=fileSuffix=.pb",
-    "test": "jest --config ./test/jest.config.ts --runInBand",
-    "test:watch": "jest --config ./test/jest.config.ts --runInBand --watch",
-    "test:cov": "jest --config ./test/jest.config.ts --runInBand --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+    "proto": "protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto -I=./resources/proto --ts_proto_opt=nestJs=true --ts_proto_out=src/auth resources/proto/auth.proto --ts_proto_opt=fileSuffix=.pb",
+    "test": "jest --config ./test/jest.config.js --runInBand",
+    "test:watch": "jest --config ./test/jest.config.js --runInBand --watch",
+    "test:cov": "jest --config ./test/jest.config.js --runInBand --coverage",
+    "test:debug": "node --inspect-brk=0.0.0.0:9229 -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config test/jest.config.js --runInBand"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.6.8",
