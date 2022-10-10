@@ -14,7 +14,6 @@ describe('JwtPayloadFactoryService', () => {
       const businessId = '1bdbf2ce-3057-497c-9ddd-a076b6f598d6';
       const id = 'c04e3560-930d-4ad2-8c53-f60b7746b81e';
       const email = 'test@test.com';
-      const password = 'password';
       const nickname = 'nickname';
       const firstName = 'firstName';
       const lastName = 'lastName';
@@ -29,7 +28,6 @@ describe('JwtPayloadFactoryService', () => {
         businessId: businessId,
         id: id,
         email: email,
-        password: password,
         nickname: nickname,
         firstName: firstName,
         lastName: lastName,
