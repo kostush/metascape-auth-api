@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  auth:
+    container_name: auth
+    build:
+      context: .
+      dockerfile: ./docker/development/Dockerfile
+    secrets:
+      - user_ssh_key
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - 50003:50003
+#      - 9229:9229
+    # these two command keeps apline container running
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    networks:
+      - metascape
+      - default
+networks:
+  metascape:
+    name: metascape
+secrets:
+  user_ssh_key:
+    file: ${USER_HOME}/.ssh/id_rsa
