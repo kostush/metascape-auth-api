@@ -11,18 +11,34 @@ export interface RegisterByEmailRequest {
   password: string;
 }
 
-/** RegisterByWallet */
-export interface RegisterByWalletRequest {
-  businessId: string;
-  address: string;
-}
-
 export interface RegisterResponseData {
   userId: string;
 }
 
 export interface RegisterResponse {
   data: RegisterResponseData | undefined;
+}
+
+/** RegisterByWallet */
+export interface RegisterByWalletRequest {
+  businessId: string;
+  address: string;
+}
+
+export interface RegisterByWalletResponseData {
+  businessId: string;
+  id: string;
+  address: string;
+  nonce: string;
+  userId: string;
+  createdAt: number;
+  updatedAt: number;
+  createdBy?: string | undefined;
+  updatedBy?: string | undefined;
+}
+
+export interface RegisterByWalletResponse {
+  data: RegisterByWalletResponseData | undefined;
 }
 
 /** LoginByWallet */
@@ -72,7 +88,7 @@ export interface ValidateResponse {
 export const METASCAPE_AUTH_PACKAGE_NAME = "metascape.auth";
 
 export interface AuthServiceClient {
-  registerByWallet(request: RegisterByWalletRequest): Observable<RegisterResponse>;
+  registerByWallet(request: RegisterByWalletRequest): Observable<RegisterByWalletResponse>;
 
   registerByEmail(request: RegisterByEmailRequest): Observable<RegisterResponse>;
 
@@ -86,7 +102,7 @@ export interface AuthServiceClient {
 export interface AuthServiceController {
   registerByWallet(
     request: RegisterByWalletRequest,
-  ): Promise<RegisterResponse> | Observable<RegisterResponse> | RegisterResponse;
+  ): Promise<RegisterByWalletResponse> | Observable<RegisterByWalletResponse> | RegisterByWalletResponse;
 
   registerByEmail(
     request: RegisterByEmailRequest,

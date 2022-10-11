@@ -27,12 +27,13 @@ describe('Validate functional tests', () => {
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
+
+  const mockUserPassword = 'password';
   const userMockResponse: UserResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
       id: 'c04e3560-930d-4ad2-8c53-f60b7746b81e',
       email: 'test@test.com',
-      password: 'password',
       nickname: 'nickname',
       firstName: 'firstName',
       lastName: 'lastName',
@@ -92,7 +93,7 @@ describe('Validate functional tests', () => {
         let error = null;
         if (
           call.request.email !== userMockResponse.data?.email ||
-          call.request.password !== userMockResponse.data?.password ||
+          call.request.password !== mockUserPassword ||
           call.request.businessId !== userMockResponse.data?.businessId
         ) {
           error = new GrpcException(status.NOT_FOUND, 'UserIsNotFound', []);
@@ -134,7 +135,7 @@ describe('Validate functional tests', () => {
       client.loginByEmail({
         businessId: userMockResponse.data?.businessId as string,
         email: userMockResponse.data?.email as string,
-        password: userMockResponse.data?.password as string,
+        password: mockUserPassword as string,
       }),
     );
 
