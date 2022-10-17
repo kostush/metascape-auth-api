@@ -10,7 +10,6 @@ services:
       - user_ssh_key
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
     ports:
       - 50003:50003
 #      - 9229:9229

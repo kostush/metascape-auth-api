@@ -28,19 +28,21 @@ pipelines:
       - step: *Build-step
       - step: *Test-step
       - step:
-          name: deployment-staging
+          name: Run deploy to staging
           deployment: staging
-          script: # Modify the commands below to build your repository.
-            - npm install
-            - npm run build
-#            - pipe: atlassian/sftp-deploy:0.5.6
-#              variables: &sftp-variables
-#                USER: 'bitbucket'
-#                SERVER: 'staging.apis.tdg-invent.io'
-#                REMOTE_PATH: '/var/www/folder'
-#                NODE_ENV: 'production'
-#                LOCAL_PATH: 'dist/*'
-#            - ssh bitbucket@staging.apis.tdg-invent.io 'cd /var/www/folder && . ./bin/provision.sh --staging'
+          script:
+            - pipe: atlassian/ssh-run:0.4.1
+              variables:
+                SSH_USER: $STAGING_SSH_USER
+                SERVER: $STAGING_SERVER
+                PORT: $STAGING_PORT
+                MODE: 'script'
+                COMMAND: 'deploy.sh'
+                ENV_VARS: >-
+                  DEPLOYMENT_ENVIRONMENT=${BITBUCKET_DEPLOYMENT_ENVIRONMENT}
+                  DEPLOYMENT_BRANCH=${BITBUCKET_BRANCH}
+                  DEPLOYMENT_PATH=${BITBUCKET_REPO_SLUG}
+                EXTRA_ARGS: '-o StrictHostKeyChecking=no'
     master:
       - step: *Code-quality-step
       - step: *Build-step
