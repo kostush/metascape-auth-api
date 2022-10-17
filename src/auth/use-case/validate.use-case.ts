@@ -13,7 +13,7 @@ export class ValidateUseCase {
   ): Promise<SuccessResponse<JwtPayloadDataDto>> {
     let user;
     try {
-      user = this.jwtService.verify<JwtPayloadDataDto>(request.authToken);
+      user = this.jwtService.verify<JwtPayloadDataDto>(request.authToken, {publicKey: process.env.JWT_PRIVATE_KEY, algorithms: ['RS256']});
     } catch (e) {
       throw new BadRequestException('Auth token is not valid or expired');
     }
