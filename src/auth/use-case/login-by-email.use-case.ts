@@ -48,7 +48,10 @@ export class LoginByEmailUseCase {
       walletsData.data,
     );
 
-    const token = this.jwtService.sign(payload, {privateKey: process.env.JWT_PRIVATE_KEY,  algorithm: 'RS256' });
+    const token = this.jwtService.sign(payload, {
+      privateKey: process.env.JWT_PRIVATE_KEY,
+      algorithm: 'RS256',
+    });
     return new SuccessResponse(new LoginResponseDataDto(token));
   }
 }
