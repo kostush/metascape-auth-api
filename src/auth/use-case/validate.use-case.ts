@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { SuccessResponse } from 'metascape-common-api';
 import { ValidateRequest } from '../requests/validate.request';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadDataDto } from '../responses/jwt-payload-data.dto';
+import { JwtPayloadDataDto } from 'metascape-common-api/dist/common/dtos/jwt-payload.dto';
 import { ValidateResponseData } from '../auth.pb';
 
 @Injectable()

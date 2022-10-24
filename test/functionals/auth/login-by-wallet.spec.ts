@@ -15,7 +15,7 @@ import { GrpcMockServer } from '@alenon/grpc-mock-server';
 import { SignNonceRequest, WalletResponse } from 'metascape-wallet-api-client';
 import { GetUserByIdRequest, UserResponse } from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadDataDto } from '../../../src/auth/responses/jwt-payload-data.dto';
+import { JwtPayloadDataDto } from 'metascape-common-api/dist/common/dtos/jwt-payload.dto';
 
 describe('Login by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -159,8 +159,5 @@ describe('Login by wallet functional tests', () => {
     );
     expect(jwtPayload.businessId).toBe(userMockResponse.data?.businessId);
     expect(jwtPayload.id).toBe(userMockResponse.data?.id);
-    expect(jwtPayload.wallets.length).toBe(1);
-    expect(jwtPayload.createdAt).toBe(userMockResponse.data?.createdAt);
-    expect(jwtPayload.updatedAt).toBe(userMockResponse.data?.updatedAt);
-  });
+    });
 });

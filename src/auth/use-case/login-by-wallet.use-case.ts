@@ -41,9 +41,7 @@ export class LoginByWalletUseCase {
       this.usersServiceClient.getUserById({ id: walletData.data!.id }),
     );
     // const walletsData = await this.walletsServiceClient.getWalletsByUserId(userData.data!.id);
-    const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!, [
-      walletData.data!,
-    ]);
+    const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);
     const token = this.jwtService.sign(payload, {
       privateKey: process.env.JWT_PRIVATE_KEY,
       algorithm: 'RS256',

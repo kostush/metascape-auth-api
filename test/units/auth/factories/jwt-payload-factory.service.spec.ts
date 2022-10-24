@@ -35,29 +35,10 @@ describe('JwtPayloadFactoryService', () => {
         createdAt: createdAt,
         updatedAt: updatedAt,
       };
-      const wallets: WalletResponseData[] = [
-        {
-          businessId: businessId,
-          id: id,
-          address: address,
-          nonce: nonce,
-          userId: userId,
-          createdAt: createdAt,
-          updatedAt: updatedAt,
-        },
-      ];
-      const jwt = jwtPayloadFactoryService.createJwtPayload(user, wallets);
+      const jwt = jwtPayloadFactoryService.createJwtPayload(user);
 
       expect(jwt.businessId).toBe(businessId);
       expect(jwt.id).toBe(id);
-      expect(jwt.wallets[0]).toBe(address);
-      expect(jwt.email).toBe(email);
-      expect(jwt.nickname).toBe(nickname);
-      expect(jwt.firstName).toBe(firstName);
-      expect(jwt.lastName).toBe(lastName);
-      expect(jwt.about).toBe(about);
-      expect(jwt.createdAt).toBe(createdAt);
-      expect(jwt.updatedAt).toBe(updatedAt);
     });
   });
 });
