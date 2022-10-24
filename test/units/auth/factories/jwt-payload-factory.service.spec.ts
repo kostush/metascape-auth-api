@@ -1,6 +1,5 @@
 import { JwtPayloadFactoryService } from '../../../../src/auth/factory/jwt-payload-factory.service';
 import { UserResponseData } from 'metascape-user-api-client';
-import { WalletResponseData } from 'metascape-wallet-api-client';
 
 describe('JwtPayloadFactoryService', () => {
   let jwtPayloadFactoryService: JwtPayloadFactoryService;
@@ -18,9 +17,6 @@ describe('JwtPayloadFactoryService', () => {
       const firstName = 'firstName';
       const lastName = 'lastName';
       const about = 'about';
-      const address = '0x57D73c1896A339c866E6076e3c499F98840439C4';
-      const nonce = 'cbf40ca2-edee-4a5b-9c05-026134dd70d8';
-      const userId = 'a2717a71-8769-469c-9e3f-5f29557b73aa';
       const createdAt = 1661180246;
       const updatedAt = 1661180246;
 

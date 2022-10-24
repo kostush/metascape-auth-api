@@ -159,5 +159,5 @@ describe('Login by wallet functional tests', () => {
     );
     expect(jwtPayload.businessId).toBe(userMockResponse.data?.businessId);
     expect(jwtPayload.id).toBe(userMockResponse.data?.id);
-    });
+  });
 });
