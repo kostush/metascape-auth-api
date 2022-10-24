@@ -4,8 +4,7 @@ import { JwtPayloadDataDto } from '../responses/jwt-payload-data.dto';
 
 export interface JwtPayloadFactoryInterface {
   createJwtPayload(
-    user: UserResponseData,
-    wallets: WalletResponseData[],
+    user: UserResponseData
   ): JwtPayloadDataDto;
 }
 

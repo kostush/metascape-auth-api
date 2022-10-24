@@ -71,14 +71,6 @@ export interface ValidateRequest {
 export interface ValidateResponseData {
   businessId: string;
   id: string;
-  createdAt: number;
-  updatedAt: number;
-  wallets: string[];
-  email?: string | undefined;
-  nickname?: string | undefined;
-  firstName?: string | undefined;
-  lastName?: string | undefined;
-  about?: string | undefined;
 }
 
 export interface ValidateResponse {

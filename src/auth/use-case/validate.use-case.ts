@@ -3,6 +3,7 @@ import { SuccessResponse } from 'metascape-common-api';
 import { ValidateRequest } from '../requests/validate.request';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDataDto } from '../responses/jwt-payload-data.dto';
+import { ValidateResponseData } from "../auth.pb";
 
 @Injectable()
 export class ValidateUseCase {
@@ -10,7 +11,7 @@ export class ValidateUseCase {
 
   async execute(
     request: ValidateRequest,
-  ): Promise<SuccessResponse<JwtPayloadDataDto>> {
+  ): Promise<SuccessResponse<ValidateResponseData>> {
     let user;
     try {
       user = this.jwtService.verify<JwtPayloadDataDto>(request.authToken, {

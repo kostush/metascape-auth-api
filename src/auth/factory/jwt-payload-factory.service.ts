@@ -8,19 +8,10 @@ import { JwtPayloadDataDto } from '../responses/jwt-payload-data.dto';
 export class JwtPayloadFactoryService implements JwtPayloadFactoryInterface {
   createJwtPayload(
     user: UserResponseData,
-    wallets: WalletResponseData[],
   ): JwtPayloadDataDto {
     return {
       businessId: user.businessId,
       id: user.id,
-      wallets: wallets.map((e) => e.address),
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      email: user.email,
-      nickname: user.nickname,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      about: user.about,
     };
   }
 }

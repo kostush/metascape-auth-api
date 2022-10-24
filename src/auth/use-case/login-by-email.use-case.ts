@@ -37,15 +37,8 @@ export class LoginByEmailUseCase {
       }),
     );
 
-    const walletsData = await lastValueFrom(
-      this.walletsServiceClient.getWalletsByUserId({
-        userId: userData.data!.id,
-      }),
-    );
-
     const payload = this.jwtPayloadFactory.createJwtPayload(
       userData.data!,
-      walletsData.data,
     );
 
     const token = this.jwtService.sign(payload, {
