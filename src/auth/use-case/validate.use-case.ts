@@ -3,7 +3,7 @@ import { SuccessResponse } from 'metascape-common-api';
 import { ValidateRequest } from '../requests/validate.request';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDataDto } from '../responses/jwt-payload-data.dto';
-import { ValidateResponseData } from "../auth.pb";
+import { ValidateResponseData } from '../auth.pb';
 
 @Injectable()
 export class ValidateUseCase {

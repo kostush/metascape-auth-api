@@ -1,4 +1,4 @@
-export class JwtPayloadDataDto  {
+export class JwtPayloadDataDto {
   businessId: string;
   id: string;
 }

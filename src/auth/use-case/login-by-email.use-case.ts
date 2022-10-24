@@ -37,9 +37,7 @@ export class LoginByEmailUseCase {
       }),
     );
 
-    const payload = this.jwtPayloadFactory.createJwtPayload(
-      userData.data!,
-    );
+    const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);
 
     const token = this.jwtService.sign(payload, {
       privateKey: process.env.JWT_PRIVATE_KEY,
