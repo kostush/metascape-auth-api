@@ -42,10 +42,7 @@ export class LoginByWalletUseCase {
     );
     // const walletsData = await this.walletsServiceClient.getWalletsByUserId(userData.data!.id);
     const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);
-    const token = this.jwtService.sign(payload, {
-      privateKey: process.env.JWT_PRIVATE_KEY,
-      algorithm: 'RS256',
-    });
+    const token = this.jwtService.sign(payload);
 
     return new SuccessResponse(new LoginResponseDataDto(token));
   }
