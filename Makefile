@@ -10,8 +10,6 @@ env: ## Create env file
 ## -----------------
 ##
 npm-install: ## Update vendors
-	$(EXEC_SERVICE) cp /run/secrets/user_ssh_key /root/.ssh/id_rsa
-	$(EXEC_SERVICE) chmod 600 /root/.ssh/id_rsa
 	$(EXEC_SERVICE) npm install
 
 npm-start-dev: ## Run dev server

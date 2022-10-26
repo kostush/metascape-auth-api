@@ -11,7 +11,8 @@ Requirements:
  - docker-compose 
  - make ([Windows](https://gnuwin32.sourceforge.net/packages/make.htm))
 1. Create .env file and copy content of .env.dist
-2. Build and start dockers for development with command:
+2. Create ssh folder and copy your `id_rsa` ssh key
+3. Build and start dockers for development with command:
 ```bash
  make dockers-start
 ```
@@ -23,11 +24,7 @@ you can check list and status of dockers by command:
 ```bash
  make dockers-status
 ```
-3. Install dependencies with command
-```bash
- make npm-install
-```
-5. Run application in dev mode by command:
+4. Run application in dev mode by command:
 ```bash
  make npm-start-dev
 ```
