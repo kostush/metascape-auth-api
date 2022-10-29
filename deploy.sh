@@ -28,4 +28,4 @@ echo "Running docker"
 make dockers-rebuild-prod || exit
 
 echo "Remove old images"
-docker rmi $(docker images -qa -f 'dangling=true')
+docker rmi $(docker images -f "dangling=true" -q) || true
