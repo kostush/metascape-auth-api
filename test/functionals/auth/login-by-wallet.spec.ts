@@ -73,7 +73,9 @@ describe('Login by wallet functional tests', () => {
         callback: sendUnaryData<WalletResponse>,
       ) => {
         let error = null;
-        if(call.request.address === walletWithoutUserMockResponse.data!.address){
+        if (
+          call.request.address === walletWithoutUserMockResponse.data!.address
+        ) {
           callback(null, walletWithoutUserMockResponse);
           return;
         }
@@ -165,11 +167,11 @@ describe('Login by wallet functional tests', () => {
     expect.hasAssertions();
     try {
       await lastValueFrom(
-          client.loginByWallet({
-            businessId: walletWithoutUserMockResponse.data!.businessId ,
-            address: walletWithoutUserMockResponse.data!.address,
-            signature: 'signature',
-          }),
+        client.loginByWallet({
+          businessId: walletWithoutUserMockResponse.data!.businessId,
+          address: walletWithoutUserMockResponse.data!.address,
+          signature: 'signature',
+        }),
       );
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
