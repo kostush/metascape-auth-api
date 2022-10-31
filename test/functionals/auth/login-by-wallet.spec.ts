@@ -35,6 +35,18 @@ describe('Login by wallet functional tests', () => {
       updatedAt: 1661180246,
     },
   };
+
+  const walletWithoutUserMockResponse: WalletResponse = {
+    data: {
+      businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
+      id: 'c04e3560-930d-4ad2-8c53-f60b7746b815',
+      address: '0x57D73c1896A339c866E6076e3c499F98840439C5',
+      nonce: 'cbf40ca2-edee-4a5b-9c05-026134dd70d8',
+      createdAt: 1661180246,
+      updatedAt: 1661180246,
+    },
+  };
+  const walletNotFoundAddress = '0x57D73c1896A339c866E6076e3c499F98840439C3';
   const userMockResponse: UserResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
@@ -61,7 +73,11 @@ describe('Login by wallet functional tests', () => {
         callback: sendUnaryData<WalletResponse>,
       ) => {
         let error = null;
-        if (call.request.address !== walletMockResponse.data?.address) {
+        if(call.request.address === walletWithoutUserMockResponse.data!.address){
+          callback(null, walletWithoutUserMockResponse);
+          return;
+        }
+        if (call.request.address !== walletMockResponse.data!.address) {
           error = new GrpcException(status.NOT_FOUND, 'WalletNotFound', []);
         }
         callback(error, walletMockResponse);
@@ -94,7 +110,7 @@ describe('Login by wallet functional tests', () => {
       await lastValueFrom(
         client.loginByWallet({
           businessId: 'test',
-          address: walletMockResponse.data?.address as string,
+          address: walletMockResponse.data!.address,
           signature: 'signature',
         }),
       );
@@ -131,8 +147,8 @@ describe('Login by wallet functional tests', () => {
     try {
       await lastValueFrom(
         client.loginByWallet({
-          businessId: walletMockResponse.data?.businessId as string,
-          address: '0x57D73c1896A339c866E6076e3c499F98840439C3',
+          businessId: walletMockResponse.data!.businessId,
+          address: walletNotFoundAddress,
           signature: 'signature',
         }),
       );
@@ -145,11 +161,27 @@ describe('Login by wallet functional tests', () => {
     }
   });
 
+  it('should fail due to wallet without userId', async () => {
+    expect.hasAssertions();
+    try {
+      await lastValueFrom(
+          client.loginByWallet({
+            businessId: walletWithoutUserMockResponse.data!.businessId ,
+            address: walletWithoutUserMockResponse.data!.address,
+            signature: 'signature',
+          }),
+      );
+    } catch (e) {
+      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
+      expect(grpcException.code).toBe(status.ALREADY_EXISTS);
+    }
+  });
+
   it('should login user successfully', async () => {
     const res = await lastValueFrom(
       client.loginByWallet({
-        businessId: walletMockResponse.data?.businessId as string,
-        address: walletMockResponse.data?.address as string,
+        businessId: walletMockResponse.data!.businessId,
+        address: walletMockResponse.data!.address,
         signature: 'signature',
       }),
     );

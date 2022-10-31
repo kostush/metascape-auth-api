@@ -14,7 +14,6 @@ export const validationSchema = Joi.object({
   [PARAMETERS.AUTH_API_GRPC_URL]: Joi.string().required(),
   [PARAMETERS.USER_API_GRPC_URL]: Joi.string().required(),
   [PARAMETERS.WALLET_API_GRPC_URL]: Joi.string().required(),
-  [PARAMETERS.JWT_SECRET]: Joi.string().required(),
   [PARAMETERS.JWT_EXPIRES_IN]: Joi.string().required(),
   [PARAMETERS.JWT_PRIVATE_KEY]: Joi.string().required(),
   [PARAMETERS.JWT_PUBLIC_KEY]: Joi.string().required(),
