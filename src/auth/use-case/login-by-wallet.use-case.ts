@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { SuccessResponse } from 'metascape-common-api';
 import {
   USERS_SERVICE_NAME,
@@ -36,11 +36,14 @@ export class LoginByWalletUseCase {
         signature: request.signature,
       }),
     );
-
+    if (!walletData.data!.userId) {
+      throw new ConflictException(
+        `Wallet with ${request.address} is not attached to any user`,
+      );
+    }
     const userData = await lastValueFrom(
-      this.usersServiceClient.getUserById({ id: walletData.data!.id }),
+      this.usersServiceClient.getUserById({ id: walletData.data!.userId }),
     );
-    // const walletsData = await this.walletsServiceClient.getWalletsByUserId(userData.data!.id);
     const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);
     const token = this.jwtService.sign(payload);
 

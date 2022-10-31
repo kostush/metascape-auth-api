@@ -21,7 +21,7 @@ import {
   GetUserByEmailAndPasswordRequest,
 } from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadDataDto } from '../../../src/auth/responses/jwt-payload-data.dto';
+import { JwtPayloadDataDto } from 'metascape-common-api/dist/common/dtos/jwt-payload.dto';
 
 describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
