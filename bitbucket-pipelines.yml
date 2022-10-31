@@ -17,11 +17,29 @@ definitions:
         script:
           - npm install
           - npm run test
+    - step: &Dev-deploy-step
+        name: Run deploy to dev server
+        deployment: Dev
+        trigger: manual
+        script:
+          - pipe: atlassian/ssh-run:0.4.1
+            variables:
+              SSH_USER: $DEV_SSH_USER
+              SERVER: $DEV_SERVER
+              PORT: $DEV_PORT
+              MODE: 'script'
+              COMMAND: 'deploy.sh'
+              ENV_VARS: >-
+                DEPLOYMENT_ENVIRONMENT=${BITBUCKET_DEPLOYMENT_ENVIRONMENT}
+                DEPLOYMENT_BRANCH=${BITBUCKET_BRANCH}
+                DEPLOYMENT_PATH=${BITBUCKET_REPO_SLUG}
+              EXTRA_ARGS: '-o StrictHostKeyChecking=no'
 pipelines:
   default:
     - step: *Code-quality-step
     - step: *Build-step
     - step: *Test-step
+    - step: *Dev-deploy-step
   branches:
     develop:
       - step: *Code-quality-step
@@ -43,6 +61,7 @@ pipelines:
                   DEPLOYMENT_BRANCH=${BITBUCKET_BRANCH}
                   DEPLOYMENT_PATH=${BITBUCKET_REPO_SLUG}
                 EXTRA_ARGS: '-o StrictHostKeyChecking=no'
+      - step: *Dev-deploy-step
     master:
       - step: *Code-quality-step
       - step: *Build-step

@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 
 RUN apk add --no-cache openssh
 RUN apk add --no-cache git
+RUN apk add --no-cache protoc
 RUN mkdir -p /root/.ssh && chmod 700 /root/.ssh
 COPY ssh/id_rsa /root/.ssh/id_rsa
 #COPY ~/.ssh/id_rsa /root/.ssh/id_rsa

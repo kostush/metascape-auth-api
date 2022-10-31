@@ -6,7 +6,7 @@ services:
     build:
       context: .
       target: production
-      dockerfile: ./docker/production/Dockerfile
+      dockerfile: ./docker/Dockerfile
     networks:
       - metascape
       - default
