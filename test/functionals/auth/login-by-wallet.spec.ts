@@ -15,7 +15,7 @@ import { GrpcMockServer } from '@alenon/grpc-mock-server';
 import { SignNonceRequest, WalletResponse } from 'metascape-wallet-api-client';
 import { GetUserByIdRequest, UserResponse } from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadDataDto } from 'metascape-common-api/dist/common/dtos/jwt-payload.dto';
+import { JwtPayloadDataDto } from 'metascape-common-api';
 
 describe('Login by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -176,6 +176,7 @@ describe('Login by wallet functional tests', () => {
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
       expect(grpcException.code).toBe(status.ALREADY_EXISTS);
+      expect(grpcException.message).toBe('walletNotAttachedToUserException');
     }
   });
 

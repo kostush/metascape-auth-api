@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtPayloadFactoryInterface } from './jwt-payload-factory.interface';
 import { UserResponseData } from 'metascape-user-api-client';
-import { JwtPayloadDataDto } from 'metascape-common-api/dist/common/dtos/jwt-payload.dto';
+import { JwtPayloadDataDto } from 'metascape-common-api';
 
 @Injectable()
 export class JwtPayloadFactoryService implements JwtPayloadFactoryInterface {

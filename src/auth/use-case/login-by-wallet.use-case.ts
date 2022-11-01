@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SuccessResponse } from 'metascape-common-api';
 import {
   USERS_SERVICE_NAME,
@@ -13,6 +13,7 @@ import {
   WalletsServiceClient,
 } from 'metascape-wallet-api-client';
 import { JwtPayloadFactoryInterface } from '../factory/jwt-payload-factory.interface';
+import { walletNotAttachedToUserException } from '../exceptions/wallet-not-attached-to-user.exception';
 
 @Injectable()
 export class LoginByWalletUseCase {
@@ -37,7 +38,7 @@ export class LoginByWalletUseCase {
       }),
     );
     if (!walletData.data!.userId) {
-      throw new ConflictException(
+      throw new walletNotAttachedToUserException(
         `Wallet with ${request.address} is not attached to any user`,
       );
     }
