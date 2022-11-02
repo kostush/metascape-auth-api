@@ -149,16 +149,5 @@ describe('Validate functional tests', () => {
       userMockResponse.data?.businessId,
     );
     expect(resValidate.data?.id).toBe(userMockResponse.data?.id);
-    expect(resValidate.data?.wallets.length).toBe(1);
-    expect(resValidate.data?.wallets[0]).toBe(
-      walletsMockResponse.data[0].address,
-    );
-    expect(resValidate.data?.createdAt).toBe(userMockResponse.data?.createdAt);
-    expect(resValidate.data?.updatedAt).toBe(userMockResponse.data?.updatedAt);
-    expect(resValidate.data?.email).toBe(userMockResponse.data?.email);
-    expect(resValidate.data?.nickname).toBe(userMockResponse.data?.nickname);
-    expect(resValidate.data?.firstName).toBe(userMockResponse.data?.firstName);
-    expect(resValidate.data?.lastName).toBe(userMockResponse.data?.lastName);
-    expect(resValidate.data?.about).toBe(userMockResponse.data?.about);
   });
 });

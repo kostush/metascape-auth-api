@@ -13,6 +13,7 @@ import {
   WalletsServiceClient,
 } from 'metascape-wallet-api-client';
 import { JwtPayloadFactoryInterface } from '../factory/jwt-payload-factory.interface';
+import { WalletNotAttachedToUserException } from '../exceptions/wallet-not-attached-to-user.exception';
 
 @Injectable()
 export class LoginByWalletUseCase {
@@ -36,14 +37,15 @@ export class LoginByWalletUseCase {
         signature: request.signature,
       }),
     );
-
+    if (!walletData.data!.userId) {
+      throw new WalletNotAttachedToUserException(
+        `Wallet with ${request.address} is not attached to any user`,
+      );
+    }
     const userData = await lastValueFrom(
-      this.usersServiceClient.getUserById({ id: walletData.data!.id }),
+      this.usersServiceClient.getUserById({ id: walletData.data!.userId }),
     );
-    // const walletsData = await this.walletsServiceClient.getWalletsByUserId(userData.data!.id);
-    const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!, [
-      walletData.data!,
-    ]);
+    const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);
     const token = this.jwtService.sign(payload);
 
     return new SuccessResponse(new LoginResponseDataDto(token));

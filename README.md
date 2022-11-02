@@ -81,3 +81,16 @@ In case of any changes in `resources/proto/auth.proto` the command needed to be 
 ```bash
  make npm-proto
 ```
+
+## Generate Publik, Private key  for JWT
+run this commands 
+````
+ssh-keygen -t rsa -b 4096 -m PEM -f jwtRS256.key
+openssl rsa -in jwtRS256.key -pubout -outform PEM -out jwtRS256.key.pub
+````
+copy tokens from files and insert in to variable JWT_PUBLIC_KEY, JWT_PRIVATE_KEY in the  .env.dist  and .env.test
+```
+cat jwtRS256.key
+cat jwtRS256.key.pub
+```
+remove spaces in the begining of each line in JWT_PUBLIC_KEY, JWT_PRIVATE_KEY

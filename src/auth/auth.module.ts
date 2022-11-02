@@ -66,11 +66,23 @@ import { WalletResponseFactory } from './factory/wallet-response-factory.service
     ParamsModule,
     JwtModule.registerAsync({
       imports: [ParamsModule],
-      useFactory: async (JWT_SECRET: string, JWT_EXPIRES_IN: string) => ({
-        secret: JWT_SECRET,
-        signOptions: { expiresIn: JWT_EXPIRES_IN },
+      useFactory: async (
+        JWT_PRIVATE_KEY: string,
+        JWT_PUBLIC_KEY: string,
+        JWT_EXPIRES_IN: string,
+        JWT_ALGORITHM: any,
+      ) => ({
+        privateKey: JWT_PRIVATE_KEY,
+        publicKey: JWT_PUBLIC_KEY,
+        signOptions: { algorithm: JWT_ALGORITHM, expiresIn: JWT_EXPIRES_IN },
+        validateOptions: { algorithms: [JWT_ALGORITHM] },
       }),
-      inject: [PARAMETERS.JWT_SECRET, PARAMETERS.JWT_EXPIRES_IN],
+      inject: [
+        PARAMETERS.JWT_PRIVATE_KEY,
+        PARAMETERS.JWT_PUBLIC_KEY,
+        PARAMETERS.JWT_EXPIRES_IN,
+        PARAMETERS.JWT_ALGORITHM,
+      ],
     }),
   ],
 })
