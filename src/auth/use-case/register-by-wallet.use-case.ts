@@ -40,10 +40,4 @@ export class RegisterByWalletUseCase {
 
     return this.walletResponseFactory.createWalletResponse(walletData.data!);
   }
-
-  // connectWallet() -> getWalletByAddress(address) -> signMessage(nonce) -> loginByWallet(bussinessId, address, signature)
-  //                    createWallet(address) -> signMessage(nonce) -> registerByWallet(bussinessId, address, signature)
-
-  // connectWallet() -> getWalletByAddress(address) -> signMessage(nonce) -> loginByWallet(bussinessId, address, signature)
-  //                    registerByWallet(bussinessId, address) -> signMessage(nonce) -> loginByWallet(bussinessId, address, signature)
 }

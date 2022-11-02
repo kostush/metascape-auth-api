@@ -16,6 +16,7 @@ import { SignNonceRequest, WalletResponse } from 'metascape-wallet-api-client';
 import { GetUserByIdRequest, UserResponse } from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDataDto } from 'metascape-common-api';
+import { WalletNotAttachedToUserException } from '../../../src/auth/exceptions/wallet-not-attached-to-user.exception';
 
 describe('Login by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -55,6 +56,7 @@ describe('Login by wallet functional tests', () => {
       updatedAt: 1661180246,
     },
   };
+  const mockWalletsNotFoundMessage = 'wallet not found';
 
   beforeAll(async () => {
     // run gRPC server
@@ -80,7 +82,9 @@ describe('Login by wallet functional tests', () => {
           return;
         }
         if (call.request.address !== walletMockResponse.data!.address) {
-          error = new GrpcException(status.NOT_FOUND, 'WalletNotFound', []);
+          error = new GrpcException(status.NOT_FOUND, 'WalletNotFound', [
+            mockWalletsNotFoundMessage,
+          ]);
         }
         callback(error, walletMockResponse);
       },
@@ -159,7 +163,7 @@ describe('Login by wallet functional tests', () => {
       expect(grpcException.code).toBe(status.NOT_FOUND);
       expect(grpcException.message).toBe('WalletNotFound');
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors().length).toBe(0);
+      expect(grpcException.getErrors()[0]).toBe(mockWalletsNotFoundMessage);
     }
   });
 
@@ -176,7 +180,11 @@ describe('Login by wallet functional tests', () => {
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
       expect(grpcException.code).toBe(status.ALREADY_EXISTS);
-      expect(grpcException.message).toBe('WalletNotAttachedToUserException');
+      expect(grpcException.message).toBe(WalletNotAttachedToUserException.name);
+      expect(grpcException.getErrors()).toBeInstanceOf(Array);
+      expect(grpcException.getErrors()[0]).toContain(
+        walletWithoutUserMockResponse.data!.address,
+      );
     }
   });
 
