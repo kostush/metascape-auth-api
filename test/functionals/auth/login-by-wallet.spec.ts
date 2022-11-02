@@ -176,7 +176,7 @@ describe('Login by wallet functional tests', () => {
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
       expect(grpcException.code).toBe(status.ALREADY_EXISTS);
-      expect(grpcException.message).toBe('walletNotAttachedToUserException');
+      expect(grpcException.message).toBe('WalletNotAttachedToUserException');
     }
   });
 
