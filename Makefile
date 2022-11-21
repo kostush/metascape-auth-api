@@ -1,5 +1,6 @@
 DOCKER_COMPOSE_DEV ?= docker-compose -f docker-compose.dev.yml
 DOCKER_COMPOSE_PROD ?= docker-compose -f docker-compose.yml
+DOCKER_COMPOSE_PROTOC_GEN_DOC ?= docker-compose -f docker-compose.protoc-gen-doc.yml
 EXEC_SERVICE ?= docker exec -ti auth
 
 env: ## Create env file
@@ -75,6 +76,8 @@ adminer-start-d: ## Create and start adminer for database management
 adminer-down: ## Stop and remove adminer
 	$(DOCKER_COMPOSE_ADMINER) down
 
+protoc-gen-doc-start: ##  Run protoc-gen-doc to generate doc of endpoints from proto
+	$(DOCKER_COMPOSE_PROTOC_GEN_DOC) up
 ##
 ## Docker compose production
 ## -----------------

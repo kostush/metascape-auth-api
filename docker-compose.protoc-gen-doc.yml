@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  protoc-gen-doc:
+    image: pseudomuto/protoc-gen-doc
+    command: ["--doc_opt=markdown,docs.md"]
+    volumes:
+      - ./docs/proto:/out
+      - ./resources/proto:/protos
