@@ -1,5 +1,6 @@
-import { IsEmail, IsString, IsUUID, Length } from 'class-validator';
+import { IsEmail, IsUUID } from 'class-validator';
 import { LoginByEmailRequest as ILoginByEmailRequest } from '../auth.pb';
+import { IsUserPassword } from 'metascape-common-api';
 
 export class LoginByEmailRequest implements ILoginByEmailRequest {
   @IsUUID(4)
@@ -8,8 +9,7 @@ export class LoginByEmailRequest implements ILoginByEmailRequest {
   @IsEmail()
   readonly email: string;
 
-  @IsString()
-  @Length(4)
+  @IsUserPassword()
   readonly password: string;
 
   constructor(businessId: string, email: string, password: string) {
