@@ -1,9 +1,9 @@
-import { IsEmail, IsUUID } from 'class-validator';
+import { IsEmail } from 'class-validator';
 import { LoginByEmailRequest as ILoginByEmailRequest } from '../auth.pb';
-import { IsUserPassword } from 'metascape-common-api';
+import { IsBusinessId, IsUserPassword } from 'metascape-common-api';
 
 export class LoginByEmailRequest implements ILoginByEmailRequest {
-  @IsUUID(4)
+  @IsBusinessId()
   readonly businessId: string;
 
   @IsEmail()

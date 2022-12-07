@@ -1,8 +1,9 @@
-import { IsEthereumAddress, IsUUID } from 'class-validator';
+import { IsEthereumAddress } from 'class-validator';
 import { RegisterByWalletRequest as IRegisterByWalletRequest } from '../auth.pb';
+import { IsBusinessId } from 'metascape-common-api';
 
 export class RegisterByWalletRequest implements IRegisterByWalletRequest {
-  @IsUUID(4)
+  @IsBusinessId()
   readonly businessId: string;
 
   @IsEthereumAddress()
