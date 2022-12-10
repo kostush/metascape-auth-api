@@ -1,12 +1,15 @@
-import { IsEmail } from 'class-validator';
 import { RegisterByEmailRequest as IRegisterByEmailRequest } from '../auth.pb';
-import { IsBusinessId, IsUserPassword } from 'metascape-common-api';
+import {
+  IsBusinessId,
+  IsUserEmail,
+  IsUserPassword,
+} from 'metascape-common-api';
 
 export class RegisterByEmailRequest implements IRegisterByEmailRequest {
   @IsBusinessId()
   readonly businessId: string;
 
-  @IsEmail()
+  @IsUserEmail()
   readonly email: string;
 
   @IsUserPassword()

@@ -1,6 +1,6 @@
-import { IsEthereumAddress, IsString } from 'class-validator';
+import { IsEthereumAddress } from 'class-validator';
 import { LoginByWalletRequest as ILoginByWalletRequest } from '../auth.pb';
-import { IsBusinessId } from 'metascape-common-api';
+import { IsBusinessId, IsWalletSignature } from 'metascape-common-api';
 
 export class LoginByWalletRequest implements ILoginByWalletRequest {
   @IsBusinessId()
@@ -9,7 +9,7 @@ export class LoginByWalletRequest implements ILoginByWalletRequest {
   @IsEthereumAddress()
   readonly address: string;
 
-  @IsString()
+  @IsWalletSignature()
   readonly signature: string;
 
   constructor(businessId: string, address: string, signature: string) {
