@@ -1,8 +1,8 @@
-import { IsString } from 'class-validator';
 import { ValidateRequest as IValidateRequest } from '../auth.pb';
+import { IsAuthToken } from 'metascape-common-api';
 
 export class ValidateRequest implements IValidateRequest {
-  @IsString()
+  @IsAuthToken()
   readonly authToken: string;
 
   constructor(authToken: string) {
