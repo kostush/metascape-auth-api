@@ -20,12 +20,12 @@ definitions:
           - npm run build
     - step: &Test-step
         name: Run tests
-          script:
-            - npm install
-            - npm run migration:run:test
-            - npm run test
-          services:
-            - postgres
+        script:
+          - npm install
+          - npm run migration:run:test
+          - npm run test
+        services:
+          - postgres
     - step: &Dev-deploy-step
         name: Run deploy to dev server
         deployment: Dev
