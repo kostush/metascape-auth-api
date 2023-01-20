@@ -30,10 +30,10 @@ import { SessionFactory } from './factory/session-factory.service';
 import { TokenFactoryInterface } from './factory/token-factory.interface';
 import { TokenFactory } from './factory/token-factory.service';
 import { SessionRepository } from './repositories/session-repository.service';
-import {TypeOrmModule} from "@nestjs/typeorm";
-import {SessionSchema} from "./schemas/session.schema";
-import {TokenSchema} from "./schemas/token.schema";
-import {SharedModule} from "metascape-common-api";
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { SessionSchema } from './schemas/session.schema';
+import { TokenSchema } from './schemas/token.schema';
+import { SharedModule } from 'metascape-common-api';
 
 @Module({
   controllers: [
@@ -108,7 +108,7 @@ import {SharedModule} from "metascape-common-api";
       ],
     }),
     TypeOrmModule.forFeature([SessionSchema, TokenSchema]),
-    SharedModule
+    SharedModule,
   ],
 })
 export class AuthModule {}
