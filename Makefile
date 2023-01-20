@@ -1,6 +1,7 @@
 DOCKER_COMPOSE_DEV ?= docker-compose -f docker-compose.dev.yml -f docker-compose.db.yml -f docker-compose.db-test.yml
 DOCKER_COMPOSE_PROD ?= docker-compose -f docker-compose.yml  -f docker-compose.db.yml
 DOCKER_COMPOSE_PROTOC_GEN_DOC ?= docker-compose -f docker-compose.protoc-gen-doc.yml
+DOCKER_COMPOSE_SCHEMASPY ?= docker-compose -f docker-compose.schemaspy.yml
 DOCKER_COMPOSE_ADMINER ?= docker-compose -f docker-compose.adminer.yml
 EXEC_SERVICE ?= docker exec -ti auth
 
@@ -13,6 +14,20 @@ env: ## Create env file
 ##
 npm-install: ## Update vendors
 	$(EXEC_SERVICE) npm install
+
+npm-migration-run: ## Run migration
+	$(EXEC_SERVICE) npm run migration:run
+
+npm-migration-revert: ## Revert migration
+	$(EXEC_SERVICE) npm run migration:revert
+
+npm-migration-generate: ## Generate migration
+	$(EXEC_SERVICE) npm run migration:generate
+
+npm-migration-create: ## Create migration
+	$(EXEC_SERVICE) npm run migration:create
+
+npm-start: ## Run prod server
 
 npm-start-dev: ## Run dev server
 	$(EXEC_SERVICE) npm run start:dev
@@ -33,12 +48,15 @@ npm-proto: ## Generate pb file based on proto
 	$(EXEC_SERVICE) npm run proto
 
 npm-test: ## Run test
+	$(EXEC_SERVICE) npm run migration:run:test
 	$(EXEC_SERVICE) npm run test
 
 npm-test-cov: ## Run test coverage
+	$(EXEC_SERVICE) npm run migration:run:test
 	$(EXEC_SERVICE) npm run test:cov
 
 npm-test-debug: ## Run test
+	$(EXEC_SERVICE) npm run migration:run:test
 	$(EXEC_SERVICE) npm run test:debug
 ##
 ## Docker compose dev
@@ -79,6 +97,15 @@ adminer-down: ## Stop and remove adminer
 
 protoc-gen-doc-start: ##  Run protoc-gen-doc to generate doc of endpoints from proto
 	$(DOCKER_COMPOSE_PROTOC_GEN_DOC) up
+
+adminer-start-d: ## Create and start adminer for database management
+	$(DOCKER_COMPOSE_ADMINER) up -d
+
+adminer-down: ## Stop and remove adminer
+	$(DOCKER_COMPOSE_ADMINER) down
+
+schemaspy-start: ## Run schemaspy to generate doc of database
+	$(DOCKER_COMPOSE_SCHEMASPY) up
 ##
 ## Docker compose production
 ## -----------------

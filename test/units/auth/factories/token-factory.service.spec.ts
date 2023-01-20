@@ -11,13 +11,11 @@ describe('TokenFactory', () => {
 
   describe('createToken', () => {
     it('should return an full token object', async () => {
-      const tokenId = uuidv4();
       const sessionId = uuidv4();
-      const token = tokenFactory.createToken(tokenId, sessionId);
+      const token = tokenFactory.createToken(sessionId);
+
       expect(token).toBeInstanceOf(TokenModel);
       expect(validate(token.id)).toBe(true);
-      expect(validate(token.sessionId)).toBe(true);
-      expect(token.id).toBe(tokenId);
       expect(token.sessionId).toBe(sessionId);
       expect(token.isClosed).toBe(false);
       expect(token.createdAt).toBe(undefined);

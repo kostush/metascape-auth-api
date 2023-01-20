@@ -56,7 +56,7 @@ export class SessionRepository implements SessionRepositoryInterface {
   async insert(session: SessionModel): Promise<void> {
     session.createdAt = this.dateTime.getCurrentUnixTimestamp();
     session.updatedAt = this.dateTime.getCurrentUnixTimestamp();
-    session.tokens.forEach((tokens) => {
+    session.tokens?.forEach((tokens) => {
       tokens.createdAt = this.dateTime.getCurrentUnixTimestamp();
     });
     await this.sessionRepository.insert(session);
@@ -64,7 +64,7 @@ export class SessionRepository implements SessionRepositoryInterface {
 
   async update(session: SessionModel): Promise<void> {
     session.updatedAt = this.dateTime.getCurrentUnixTimestamp();
-    session.tokens.forEach((token) => {
+    session.tokens?.forEach((token) => {
       if (!token.createdAt) {
         token.createdAt = this.dateTime.getCurrentUnixTimestamp();
       }

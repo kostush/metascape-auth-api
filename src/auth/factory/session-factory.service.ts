@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { TokenModel } from '../models/token.model';
 import { SessionFactoryInterface } from './session-factory.interface';
 import { SessionModel } from '../models/session.model';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class SessionFactory implements SessionFactoryInterface {
-  createSession(
-    sessionId: string,
-    userId: string,
-    token: TokenModel,
-  ): SessionModel {
-    return new SessionModel(sessionId, userId, false, [token]);
+  createSession(userId: string): SessionModel {
+    return new SessionModel(uuidv4(), userId, false);
   }
 }

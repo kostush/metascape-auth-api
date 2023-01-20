@@ -14,7 +14,6 @@ import {
   WalletsServiceClient,
 } from 'metascape-wallet-api-client';
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
-import { v4 as uuidv4 } from 'uuid';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
 
@@ -47,14 +46,10 @@ export class LoginByEmailUseCase {
       }),
     );
 
-    const sessionId = uuidv4();
-    const tokenId = uuidv4();
-    const token = this.tokenFactory.createToken(tokenId, sessionId);
-    const session = this.sessionFactory.createSession(
-      sessionId,
-      userData.data!.id,
-      token,
-    );
+    const session = this.sessionFactory.createSession(userData.data!.id);
+    const token = this.tokenFactory.createToken(session.id);
+    session.tokens = [token];
+
     await this.sessionRepository.insert(session);
 
     const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);

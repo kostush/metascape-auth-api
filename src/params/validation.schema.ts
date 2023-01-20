@@ -19,7 +19,7 @@ export const validationSchema = Joi.object({
   [PARAMETERS.JWT_PUBLIC_KEY]: Joi.string().required(),
   [PARAMETERS.JWT_ALGORITHM]: Joi.string().required(),
   [PARAMETERS.DB_HOST]: Joi.string().required(),
-  [PARAMETERS.DB_PORT]: Joi.string().required(),
+  [PARAMETERS.DB_PORT]: Joi.number().required(),
   [PARAMETERS.DB_USER]: Joi.string().required(),
   [PARAMETERS.DB_PASSWORD]: Joi.string().required(),
   [PARAMETERS.DB_NAME]: Joi.string().required(),
