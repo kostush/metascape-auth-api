@@ -5,10 +5,16 @@ import { JwtPayloadDataDto } from 'metascape-common-api';
 
 @Injectable()
 export class JwtPayloadFactoryService implements JwtPayloadFactoryInterface {
-  createJwtPayload(user: UserResponseData): JwtPayloadDataDto {
+  createJwtPayload(
+    user: UserResponseData,
+    sessionId: string,
+    tokenId: string,
+  ): JwtPayloadDataDto {
     return {
       businessId: user.businessId,
       id: user.id,
+      sessionId: sessionId,
+      tokenId: tokenId,
     };
   }
 }

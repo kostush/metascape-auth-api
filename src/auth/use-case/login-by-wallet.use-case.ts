@@ -60,7 +60,11 @@ export class LoginByWalletUseCase {
     session.tokens = [token];
 
     await this.sessionRepository.insert(session);
-    const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);
+    const payload = this.jwtPayloadFactory.createJwtPayload(
+      userData.data!,
+      session.id,
+      token.id,
+    );
     const jwt = this.jwtService.sign(payload);
 
     return new SuccessResponse(new LoginResponseDataDto(jwt));
