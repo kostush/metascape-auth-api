@@ -1,12 +1,13 @@
 image: node:16.16.0
 
 definitions:
-  postgres:
-    image: postgres
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: test
+  services:
+    postgres:
+      image: postgres
+      environment:
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: admin
+        POSTGRES_DB: test
   steps:
     - step: &Code-quality-step
         name: Run code quality
