@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+  adminer:
+    image: adminer
+    environment:
+      ADMINER_DEFAULT_DB_DRIVER: postgres
+      ADMINER_DEFAULT_DB_HOST: ${DB_HOST}
+      ADMINER_DEFAULT_DB_NAME: ${DB_NAME}
+      ADMINER_PLUGINS: tables-filter tinymce
+    ports:
+      - 8080:8080

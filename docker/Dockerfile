@@ -38,4 +38,4 @@ COPY . .
 
 COPY --from=development /usr/src/app/dist ./dist
 
-CMD node dist/main
+CMD npm run migration:run node dist/main

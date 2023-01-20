@@ -13,6 +13,10 @@ import {
   WALLETS_SERVICE_NAME,
   WalletsServiceClient,
 } from 'metascape-wallet-api-client';
+import { SessionFactoryInterface } from '../factory/session-factory.interface';
+import { v4 as uuidv4 } from 'uuid';
+import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
+import { TokenFactoryInterface } from '../factory/token-factory.interface';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -24,6 +28,12 @@ export class LoginByEmailUseCase {
     @Inject(JwtPayloadFactoryInterface)
     private readonly jwtPayloadFactory: JwtPayloadFactoryInterface,
     private readonly jwtService: JwtService,
+    @Inject(SessionFactoryInterface)
+    private readonly sessionFactory: SessionFactoryInterface,
+    @Inject(SessionRepositoryInterface)
+    private readonly sessionRepository: SessionRepositoryInterface,
+    @Inject(TokenFactoryInterface)
+    private readonly tokenFactory: TokenFactoryInterface,
   ) {}
 
   async execute(
@@ -37,8 +47,18 @@ export class LoginByEmailUseCase {
       }),
     );
 
+    const sessionId = uuidv4();
+    const tokenId = uuidv4();
+    const token = this.tokenFactory.createToken(tokenId, sessionId);
+    const session = this.sessionFactory.createSession(
+      sessionId,
+      userData.data!.id,
+      token,
+    );
+    await this.sessionRepository.insert(session);
+
     const payload = this.jwtPayloadFactory.createJwtPayload(userData.data!);
-    const token = this.jwtService.sign(payload);
-    return new SuccessResponse(new LoginResponseDataDto(token));
+    const jwt = this.jwtService.sign(payload);
+    return new SuccessResponse(new LoginResponseDataDto(jwt));
   }
 }

@@ -24,6 +24,16 @@ import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service'
 import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
 import { WalletResponseFactoryInterface } from './factory/wallet-response-factory.interface';
 import { WalletResponseFactory } from './factory/wallet-response-factory.service';
+import { SessionRepositoryInterface } from './repositories/session-repository.interface';
+import { SessionFactoryInterface } from './factory/session-factory.interface';
+import { SessionFactory } from './factory/session-factory.service';
+import { TokenFactoryInterface } from './factory/token-factory.interface';
+import { TokenFactory } from './factory/token-factory.service';
+import { SessionRepository } from './repositories/session-repository.service';
+import {TypeOrmModule} from "@nestjs/typeorm";
+import {SessionSchema} from "./schemas/session.schema";
+import {TokenSchema} from "./schemas/token.schema";
+import {SharedModule} from "metascape-common-api";
 
 @Module({
   controllers: [
@@ -56,6 +66,19 @@ import { WalletResponseFactory } from './factory/wallet-response-factory.service
       provide: WalletResponseFactoryInterface,
       useClass: WalletResponseFactory,
     },
+    {
+      provide: SessionFactoryInterface,
+      useClass: SessionFactory,
+    },
+    {
+      provide: TokenFactoryInterface,
+      useClass: TokenFactory,
+    },
+    {
+      provide: SessionRepositoryInterface,
+      useClass: SessionRepository,
+    },
+
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,
     LoginByWalletUseCase,
@@ -84,6 +107,8 @@ import { WalletResponseFactory } from './factory/wallet-response-factory.service
         PARAMETERS.JWT_ALGORITHM,
       ],
     }),
+    TypeOrmModule.forFeature([SessionSchema, TokenSchema]),
+    SharedModule
   ],
 })
 export class AuthModule {}
