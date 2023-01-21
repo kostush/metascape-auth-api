@@ -34,6 +34,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SessionSchema } from './schemas/session.schema';
 import { TokenSchema } from './schemas/token.schema';
 import { SharedModule } from 'metascape-common-api';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   controllers: [
@@ -86,6 +87,7 @@ import { SharedModule } from 'metascape-common-api';
     ValidateUseCase,
   ],
   imports: [
+    ConfigModule,
     ParamsModule,
     JwtModule.registerAsync({
       imports: [ParamsModule],
@@ -100,7 +102,10 @@ import { SharedModule } from 'metascape-common-api';
       ) => ({
         privateKey: JWT_AUTH_PRIVATE_KEY,
         publicKey: JWT_AUTH_PUBLIC_KEY,
-        signOptions: { algorithm: JWT_ALGORITHM, expiresIn: JWT_AUTH_EXPIRES_IN },
+        signOptions: {
+          algorithm: JWT_ALGORITHM,
+          expiresIn: JWT_AUTH_EXPIRES_IN,
+        },
         validateOptions: { algorithms: [JWT_ALGORITHM] },
       }),
       inject: [

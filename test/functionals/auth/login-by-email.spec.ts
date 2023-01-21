@@ -22,7 +22,7 @@ import {
 } from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDataDto } from 'metascape-common-api';
-import PARAMETERS from "../../../src/params/params.constants";
+import PARAMETERS from '../../../src/params/params.constants';
 
 describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -184,11 +184,11 @@ describe('Register by wallet functional tests', () => {
     );
     const authJwtPayload = jwtService.verify<JwtPayloadDataDto>(
       res?.data?.authToken as string,
-        {publicKey:PARAMETERS.JWT_AUTH_PUBLIC_KEY}
+      { publicKey: process.env[PARAMETERS.JWT_AUTH_PUBLIC_KEY] },
     );
     const refreshJwtPayload = jwtService.verify<JwtPayloadDataDto>(
-        res?.data?.authToken as string,
-        {publicKey:PARAMETERS.JWT_REFRESH_PUBLIC_KEY}
+      res?.data?.refreshToken as string,
+      { publicKey: process.env[PARAMETERS.JWT_REFRESH_PUBLIC_KEY] },
     );
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
@@ -197,7 +197,9 @@ describe('Register by wallet functional tests', () => {
     expect(authJwtPayload.sessionId).toBeDefined();
     expect(authJwtPayload.tokenId).toBeDefined();
     expect(refreshJwtPayload.id).toBe(userMockResponse.data?.id);
-    expect(refreshJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
+    expect(refreshJwtPayload.businessId).toBe(
+      userMockResponse.data?.businessId,
+    );
     expect(refreshJwtPayload.sessionId).toBeDefined();
     expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
     expect(refreshJwtPayload.sessionId).toBe(authJwtPayload.sessionId);

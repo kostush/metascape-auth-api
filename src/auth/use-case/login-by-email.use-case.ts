@@ -16,7 +16,8 @@ import {
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
-import PARAMETERS from "../../params/params.constants";
+import PARAMETERS from '../../params/params.constants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -34,6 +35,7 @@ export class LoginByEmailUseCase {
     private readonly sessionRepository: SessionRepositoryInterface,
     @Inject(TokenFactoryInterface)
     private readonly tokenFactory: TokenFactoryInterface,
+    private readonly configService: ConfigService,
   ) {}
 
   async execute(
@@ -54,20 +56,18 @@ export class LoginByEmailUseCase {
     await this.sessionRepository.insert(session);
 
     const payload = this.jwtPayloadFactory.createJwtPayload(
-        userData.data!,
-        session.id,
-        token.id,
+      userData.data!,
+      session.id,
+      token.id,
     );
-    const authJwt = this.jwtService.sign(payload,{
-      privateKey:PARAMETERS.JWT_AUTH_PRIVATE_KEY,
-      expiresIn:PARAMETERS.JWT_AUTH_EXPIRES_IN
+    const authJwt = this.jwtService.sign(payload, {
+      privateKey: this.configService.get(PARAMETERS.JWT_AUTH_PRIVATE_KEY),
+      expiresIn: this.configService.get(PARAMETERS.JWT_AUTH_EXPIRES_IN),
     });
-
-    const refreshJwt = this.jwtService.sign(payload,{
-      privateKey:PARAMETERS.JWT_REFRESH_PRIVATE_KEY,
-      expiresIn:PARAMETERS.JWT_REFRESH_EXPIRES_IN
+    const refreshJwt = this.jwtService.sign(payload, {
+      privateKey: this.configService.get(PARAMETERS.JWT_REFRESH_PRIVATE_KEY),
+      expiresIn: this.configService.get(PARAMETERS.JWT_REFRESH_EXPIRES_IN),
     });
-
     return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
   }
 }

@@ -17,6 +17,7 @@ import { GetUserByIdRequest, UserResponse } from 'metascape-user-api-client';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadDataDto } from 'metascape-common-api';
 import { WalletNotAttachedToUserException } from '../../../src/auth/exceptions/wallet-not-attached-to-user.exception';
+import PARAMETERS from '../../../src/params/params.constants';
 
 describe('Login by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -197,10 +198,26 @@ describe('Login by wallet functional tests', () => {
       }),
     );
 
-    const jwtPayload = jwtService.verify<JwtPayloadDataDto>(
+    const authJwtPayload = jwtService.verify<JwtPayloadDataDto>(
       res?.data?.authToken as string,
+      { publicKey: process.env[PARAMETERS.JWT_AUTH_PUBLIC_KEY] },
     );
-    expect(jwtPayload.businessId).toBe(userMockResponse.data?.businessId);
-    expect(jwtPayload.id).toBe(userMockResponse.data?.id);
+    const refreshJwtPayload = jwtService.verify<JwtPayloadDataDto>(
+      res?.data?.refreshToken as string,
+      { publicKey: process.env[PARAMETERS.JWT_REFRESH_PUBLIC_KEY] },
+    );
+    expect(res.data?.refreshToken).toBeDefined();
+    expect(res.data?.authToken).toBeDefined();
+    expect(authJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
+    expect(authJwtPayload.id).toBe(userMockResponse.data?.id);
+    expect(authJwtPayload.sessionId).toBeDefined();
+    expect(authJwtPayload.tokenId).toBeDefined();
+    expect(refreshJwtPayload.id).toBe(userMockResponse.data?.id);
+    expect(refreshJwtPayload.businessId).toBe(
+      userMockResponse.data?.businessId,
+    );
+    expect(refreshJwtPayload.sessionId).toBeDefined();
+    expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
+    expect(refreshJwtPayload.sessionId).toBe(authJwtPayload.sessionId);
   });
 });
