@@ -56,6 +56,7 @@ message LoginByWalletRequest {
 
 message LoginResponseData {
   string authToken = 1;
+  string refreshToken = 2;
 }
 
 message LoginResponse {

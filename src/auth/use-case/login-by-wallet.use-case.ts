@@ -17,6 +17,7 @@ import { WalletNotAttachedToUserException } from '../exceptions/wallet-not-attac
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
+import PARAMETERS from "../../params/params.constants";
 
 @Injectable()
 export class LoginByWalletUseCase {
@@ -65,8 +66,16 @@ export class LoginByWalletUseCase {
       session.id,
       token.id,
     );
-    const jwt = this.jwtService.sign(payload);
+    const authJwt = this.jwtService.sign(payload,{
+      privateKey:PARAMETERS.JWT_AUTH_PRIVATE_KEY,
+      expiresIn:PARAMETERS.JWT_AUTH_EXPIRES_IN
+    });
 
-    return new SuccessResponse(new LoginResponseDataDto(jwt));
+    const refreshJwt = this.jwtService.sign(payload,{
+      privateKey:PARAMETERS.JWT_REFRESH_PRIVATE_KEY,
+      expiresIn:PARAMETERS.JWT_REFRESH_EXPIRES_IN
+    });
+
+    return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
   }
 }
