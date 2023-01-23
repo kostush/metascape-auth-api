@@ -11,6 +11,8 @@ export interface SessionRepositoryInterface {
 
   getOneByTokenId(tokenId: string): Promise<SessionModel>;
 
+  getOneNotClosedByTokenId(tokenId: string): Promise<SessionModel>;
+
   insert(session: SessionModel): Promise<void>;
 
   update(session: SessionModel): Promise<void>;

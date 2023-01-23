@@ -13,7 +13,6 @@ import { LoginByWalletController } from './controllers/login-by-wallet.controlle
 import { LoginByEmailController } from './controllers/login-by-email.controller';
 import { LoginByWalletUseCase } from './use-case/login-by-wallet.use-case';
 import { LoginByEmailUseCase } from './use-case/login-by-email.use-case';
-import { JwtModule } from '@nestjs/jwt';
 import { ValidateUseCase } from './use-case/validate.use-case';
 import { ValidateController } from './controllers/validate.controller';
 import {
@@ -35,6 +34,10 @@ import { SessionSchema } from './schemas/session.schema';
 import { TokenSchema } from './schemas/token.schema';
 import { SharedModule } from 'metascape-common-api';
 import { ConfigModule } from '@nestjs/config';
+import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
+import { AuthTokenModule } from '../auth-token/auth-token.module';
+import { TokenRepositoryInterface } from './repositories/token-repository.interface';
+import { TokenRepository } from './repositories/token-repository.service';
 
 @Module({
   controllers: [
@@ -79,6 +82,10 @@ import { ConfigModule } from '@nestjs/config';
       provide: SessionRepositoryInterface,
       useClass: SessionRepository,
     },
+    {
+      provide: TokenRepositoryInterface,
+      useClass: TokenRepository,
+    },
 
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,
@@ -89,37 +96,10 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule,
     ParamsModule,
-    JwtModule.registerAsync({
-      imports: [ParamsModule],
-      useFactory: async (
-        JWT_AUTH_PRIVATE_KEY: string,
-        JWT_AUTH_PUBLIC_KEY: string,
-        JWT_AUTH_EXPIRES_IN: string,
-        JWT_REFRESH_PRIVATE_KEY: string,
-        JWT_REFRESH_PUBLIC_KEY: string,
-        JWT_REFRESH_EXPIRES_IN: string,
-        JWT_ALGORITHM: any,
-      ) => ({
-        privateKey: JWT_AUTH_PRIVATE_KEY,
-        publicKey: JWT_AUTH_PUBLIC_KEY,
-        signOptions: {
-          algorithm: JWT_ALGORITHM,
-          expiresIn: JWT_AUTH_EXPIRES_IN,
-        },
-        validateOptions: { algorithms: [JWT_ALGORITHM] },
-      }),
-      inject: [
-        PARAMETERS.JWT_AUTH_PRIVATE_KEY,
-        PARAMETERS.JWT_AUTH_PUBLIC_KEY,
-        PARAMETERS.JWT_AUTH_EXPIRES_IN,
-        PARAMETERS.JWT_REFRESH_PRIVATE_KEY,
-        PARAMETERS.JWT_REFRESH_PUBLIC_KEY,
-        PARAMETERS.JWT_REFRESH_EXPIRES_IN,
-        PARAMETERS.JWT_ALGORITHM,
-      ],
-    }),
     TypeOrmModule.forFeature([SessionSchema, TokenSchema]),
     SharedModule,
+    RefreshTokenModule,
+    AuthTokenModule,
   ],
 })
 export class AuthModule {}
