@@ -4,17 +4,17 @@ export class SessionModel {
   id: string;
   userId: string;
   isClosed: boolean;
-  tokens?: TokenModel[];
-  createdAt?: number | null;
-  updatedAt?: number | null;
+  tokens: TokenModel[];
+  createdAt: number | null;
+  updatedAt: number | null;
 
   constructor(
     id: string,
     userId: string,
     isClosed: boolean,
-    tokens?: TokenModel[],
-    createdAt?: number,
-    updatedAt?: number,
+    tokens: TokenModel[],
+    createdAt: number | null,
+    updatedAt: number | null,
   ) {
     this.id = id;
     this.userId = userId;
