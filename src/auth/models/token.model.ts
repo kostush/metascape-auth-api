@@ -2,18 +2,18 @@ import { SessionModel } from './session.model';
 
 export class TokenModel {
   id: string;
-  sessionId?: string;
-  isClosed?: boolean;
-  createdAt?: number | null;
-  updatedAt?: number | null;
+  sessionId: string;
+  isClosed: boolean;
+  createdAt: number | null;
+  updatedAt: number | null;
   session?: SessionModel;
 
   constructor(
     id: string,
-    sessionId?: string,
-    isClosed?: boolean,
-    createdAt?: number,
-    updatedAt?: number,
+    sessionId: string,
+    isClosed: boolean,
+    createdAt: number | null,
+    updatedAt: number | null,
     session?: SessionModel,
   ) {
     this.id = id;

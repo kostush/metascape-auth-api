@@ -5,16 +5,16 @@ export class SessionModel {
   userId: string;
   isClosed: boolean;
   tokens?: TokenModel[];
-  createdAt?: number | null;
-  updatedAt?: number | null;
+  createdAt: number | null;
+  updatedAt: number | null;
 
   constructor(
     id: string,
     userId: string,
     isClosed: boolean,
+    createdAt: number | null,
+    updatedAt: number | null,
     tokens?: TokenModel[],
-    createdAt?: number,
-    updatedAt?: number,
   ) {
     this.id = id;
     this.userId = userId;

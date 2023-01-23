@@ -6,6 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class TokenFactory implements TokenFactoryInterface {
   createToken(sessionId: string): TokenModel {
-    return new TokenModel(uuidv4(), sessionId, false);
+    return new TokenModel(uuidv4(), sessionId, false, null, null);
   }
 }

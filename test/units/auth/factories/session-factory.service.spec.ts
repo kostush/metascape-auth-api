@@ -19,8 +19,8 @@ describe('SessionFactory', () => {
       expect(validate(session.userId)).toBe(true);
       expect(session.userId).toBe(mocUserId);
       expect(session.isClosed).toBe(false);
-      expect(session.createdAt).toBe(undefined);
-      expect(session.updatedAt).toBe(undefined);
+      expect(session.createdAt).toBe(null);
+      expect(session.updatedAt).toBe(null);
     });
   });
 });

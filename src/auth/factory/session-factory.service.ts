@@ -6,6 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class SessionFactory implements SessionFactoryInterface {
   createSession(userId: string): SessionModel {
-    return new SessionModel(uuidv4(), userId, false);
+    return new SessionModel(uuidv4(), userId, false, null, null);
   }
 }
