@@ -28,6 +28,7 @@ npm-migration-create: ## Create migration
 	$(EXEC_SERVICE) npm run migration:create
 
 npm-start: ## Run prod server
+	$(EXEC_SERVICE) npm run start
 
 npm-start-dev: ## Run dev server
 	$(EXEC_SERVICE) npm run start:dev

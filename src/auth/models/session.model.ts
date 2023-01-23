@@ -4,7 +4,7 @@ export class SessionModel {
   id: string;
   userId: string;
   isClosed: boolean;
-  tokens: TokenModel[];
+  tokens?: TokenModel[];
   createdAt: number | null;
   updatedAt: number | null;
 
@@ -12,9 +12,9 @@ export class SessionModel {
     id: string,
     userId: string,
     isClosed: boolean,
-    tokens: TokenModel[],
     createdAt: number | null,
     updatedAt: number | null,
+    tokens?: TokenModel[],
   ) {
     this.id = id;
     this.userId = userId;
