@@ -18,8 +18,8 @@ describe('TokenFactory', () => {
       expect(validate(token.id)).toBe(true);
       expect(token.sessionId).toBe(sessionId);
       expect(token.isClosed).toBe(false);
-      expect(token.createdAt).toBe(undefined);
-      expect(token.updatedAt).toBe(undefined);
+      expect(token.createdAt).toBe(null);
+      expect(token.updatedAt).toBe(null);
     });
   });
 });
