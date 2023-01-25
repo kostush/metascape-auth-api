@@ -31,7 +31,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SessionSchema } from './schemas/session.schema';
 import { TokenSchema } from './schemas/token.schema';
 import { SharedModule } from 'metascape-common-api';
-import { ConfigModule } from '@nestjs/config';
 import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
 import { AuthTokenModule } from '../auth-token/auth-token.module';
 import { TokenRepositoryInterface } from './repositories/token-repository.interface';
