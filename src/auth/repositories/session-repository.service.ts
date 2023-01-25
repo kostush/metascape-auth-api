@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { DateTimeInterface } from 'metascape-common-api';
 import { SessionNotFoundException } from '../exceptions/session-not-found.exception';
 import { SessionModel } from '../models/session.model';
+import { SessionIsClosedException } from "../exceptions/session-is-closed.exception";
 
 @Injectable()
 export class SessionRepository implements SessionRepositoryInterface {
@@ -48,6 +49,16 @@ export class SessionRepository implements SessionRepositoryInterface {
     if (!session) {
       throw new SessionNotFoundException(
         `session is not found by token id "${tokenId}"`,
+      );
+    }
+    return session;
+  }
+
+  async getOneNotClosedByTokenId(tokenId: string): Promise<SessionModel> {
+    const session = await this.getOneByTokenId(tokenId);
+    if (session.isClosed) {
+      throw new SessionIsClosedException(
+        `session by token id "${tokenId}" is closed`,
       );
     }
     return session;
