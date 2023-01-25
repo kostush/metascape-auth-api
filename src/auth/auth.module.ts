@@ -94,7 +94,6 @@ import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service'
     ValidateUseCase,
   ],
   imports: [
-    ConfigModule,
     ParamsModule,
     TypeOrmModule.forFeature([SessionSchema, TokenSchema]),
     SharedModule,
