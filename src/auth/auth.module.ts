@@ -19,8 +19,6 @@ import {
   WalletApiClientFactory,
   WALLETS_SERVICE_NAME,
 } from 'metascape-wallet-api-client';
-import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
-import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
 import { WalletResponseFactoryInterface } from './factory/wallet-response-factory.interface';
 import { WalletResponseFactory } from './factory/wallet-response-factory.service';
 import { SessionRepositoryInterface } from './repositories/session-repository.interface';
@@ -38,6 +36,8 @@ import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
 import { AuthTokenModule } from '../auth-token/auth-token.module';
 import { TokenRepositoryInterface } from './repositories/token-repository.interface';
 import { TokenRepository } from './repositories/token-repository.service';
+import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
+import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
 
 @Module({
   controllers: [
@@ -63,10 +63,6 @@ import { TokenRepository } from './repositories/token-repository.service';
       inject: [PARAMETERS.WALLET_API_GRPC_URL],
     },
     {
-      provide: JwtPayloadFactoryInterface,
-      useClass: JwtPayloadFactoryService,
-    },
-    {
       provide: WalletResponseFactoryInterface,
       useClass: WalletResponseFactory,
     },
@@ -85,6 +81,10 @@ import { TokenRepository } from './repositories/token-repository.service';
     {
       provide: TokenRepositoryInterface,
       useClass: TokenRepository,
+    },
+    {
+      provide: JwtPayloadFactoryInterface,
+      useClass: JwtPayloadFactoryService,
     },
 
     RegisterByEmailUseCase,

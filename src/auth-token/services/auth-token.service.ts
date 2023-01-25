@@ -10,4 +10,8 @@ export class AuthTokenService implements AuthTokenInterface {
   verify(authToken: string): JwtPayloadDataDto {
     return this.jwtService.verify(authToken);
   }
+
+  sign(payload: JwtPayloadDataDto): string {
+    return this.jwtService.sign(payload);
+  }
 }

@@ -7,7 +7,6 @@ import {
 import { lastValueFrom } from 'rxjs';
 import { LoginByWalletRequest } from '../requests/login-by-wallet.request';
 import { LoginResponseDataDto } from '../responses/login-response-data.dto';
-import { JwtService } from '@nestjs/jwt';
 import {
   WALLETS_SERVICE_NAME,
   WalletsServiceClient,
@@ -17,8 +16,8 @@ import { WalletNotAttachedToUserException } from '../exceptions/wallet-not-attac
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
-import PARAMETERS from '../../params/params.constants';
-import { ConfigService } from '@nestjs/config';
+import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
+import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
 
 @Injectable()
 export class LoginByWalletUseCase {
@@ -29,14 +28,16 @@ export class LoginByWalletUseCase {
     private readonly walletsServiceClient: WalletsServiceClient,
     @Inject(JwtPayloadFactoryInterface)
     private readonly jwtPayloadFactory: JwtPayloadFactoryInterface,
-    private readonly jwtService: JwtService,
     @Inject(SessionFactoryInterface)
     private readonly sessionFactory: SessionFactoryInterface,
     @Inject(SessionRepositoryInterface)
     private readonly sessionRepository: SessionRepositoryInterface,
     @Inject(TokenFactoryInterface)
     private readonly tokenFactory: TokenFactoryInterface,
-    private readonly configService: ConfigService,
+    @Inject(AuthTokenInterface)
+    private readonly authTokenService: AuthTokenInterface,
+    @Inject(RefreshTokenInterface)
+    private readonly refreshTokenService: RefreshTokenInterface,
   ) {}
 
   async execute(
@@ -68,14 +69,8 @@ export class LoginByWalletUseCase {
       session.id,
       token.id,
     );
-    const authJwt = this.jwtService.sign(payload, {
-      privateKey: this.configService.get(PARAMETERS.JWT_AUTH_PRIVATE_KEY),
-      expiresIn: this.configService.get(PARAMETERS.JWT_AUTH_EXPIRES_IN),
-    });
-    const refreshJwt = this.jwtService.sign(payload, {
-      privateKey: this.configService.get(PARAMETERS.JWT_REFRESH_PRIVATE_KEY),
-      expiresIn: this.configService.get(PARAMETERS.JWT_REFRESH_EXPIRES_IN),
-    });
+    const authJwt = this.authTokenService.sign(payload);
+    const refreshJwt = this.refreshTokenService.sign(payload);
 
     return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
   }

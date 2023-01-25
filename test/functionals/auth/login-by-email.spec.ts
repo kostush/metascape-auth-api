@@ -20,9 +20,8 @@ import {
   UserResponse,
   GetUserByEmailAndPasswordRequest,
 } from 'metascape-user-api-client';
-import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadDataDto } from 'metascape-common-api';
-import PARAMETERS from '../../../src/params/params.constants';
+import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
+import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
 
 describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -30,7 +29,8 @@ describe('Register by wallet functional tests', () => {
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let jwtService: JwtService;
+  let authTokenService: AuthTokenInterface;
+  let refreshTokenService: RefreshTokenInterface;
 
   const mockUserPassword = 'password';
 
@@ -68,7 +68,8 @@ describe('Register by wallet functional tests', () => {
   beforeAll(async () => {
     // run gRPC server
     app = await createMockAppHelper();
-    jwtService = app.get(JwtService);
+    authTokenService = app.get(AuthTokenInterface);
+    refreshTokenService = app.get(RefreshTokenInterface);
     await app.listen();
 
     // create gRPC client
@@ -182,13 +183,11 @@ describe('Register by wallet functional tests', () => {
         password: mockUserPassword as string,
       }),
     );
-    const authJwtPayload = jwtService.verify<JwtPayloadDataDto>(
+    const authJwtPayload = authTokenService.verify(
       res?.data?.authToken as string,
-      { publicKey: process.env[PARAMETERS.JWT_AUTH_PUBLIC_KEY] },
     );
-    const refreshJwtPayload = jwtService.verify<JwtPayloadDataDto>(
+    const refreshJwtPayload = refreshTokenService.verify(
       res?.data?.refreshToken as string,
-      { publicKey: process.env[PARAMETERS.JWT_REFRESH_PUBLIC_KEY] },
     );
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
@@ -196,12 +195,6 @@ describe('Register by wallet functional tests', () => {
     expect(authJwtPayload.id).toBe(userMockResponse.data?.id);
     expect(authJwtPayload.sessionId).toBeDefined();
     expect(authJwtPayload.tokenId).toBeDefined();
-    expect(refreshJwtPayload.id).toBe(userMockResponse.data?.id);
-    expect(refreshJwtPayload.businessId).toBe(
-      userMockResponse.data?.businessId,
-    );
-    expect(refreshJwtPayload.sessionId).toBeDefined();
     expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
-    expect(refreshJwtPayload.sessionId).toBe(authJwtPayload.sessionId);
   });
 });

@@ -10,4 +10,8 @@ export class RefreshTokenService implements RefreshTokenInterface {
   verify(refreshToken: string): RefreshTokenPayloadDataDto {
     return this.jwtService.verify(refreshToken);
   }
+
+  sign(payload: RefreshTokenPayloadDataDto): string {
+    return this.jwtService.sign(payload);
+  }
 }

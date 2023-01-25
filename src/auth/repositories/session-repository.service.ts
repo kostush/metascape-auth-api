@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { DateTimeInterface } from 'metascape-common-api';
 import { SessionNotFoundException } from '../exceptions/session-not-found.exception';
 import { SessionModel } from '../models/session.model';
-import { SessionIsClosedException } from "../exceptions/session-is-closed.exception";
+import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
 
 @Injectable()
 export class SessionRepository implements SessionRepositoryInterface {

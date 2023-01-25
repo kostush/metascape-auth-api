@@ -6,7 +6,6 @@ import { SessionNotFoundException } from '../exceptions/session-not-found.except
 import { TokenModel } from '../models/token.model';
 import { TokenRepositoryInterface } from './token-repository.interface';
 import { TokenNotFoundException } from '../exceptions/token-not-found.exception';
-import { boolean } from 'joi';
 import { TokenIsClosedException } from '../exceptions/token-is-closed.exception';
 import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
 
