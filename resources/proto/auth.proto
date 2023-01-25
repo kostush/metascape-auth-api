@@ -8,7 +8,6 @@ service AuthService {
   rpc LoginByWallet (LoginByWalletRequest) returns (LoginResponse) {}
   rpc LoginByEmail (LoginByEmailRequest) returns (LoginResponse) {}
   rpc Validate (ValidateRequest) returns (ValidateResponse) {}
-  rpc Refresh(RefreshRequest) returns (LoginResponse) {}
 }
 
 // RegisterByEmail
@@ -85,7 +84,3 @@ message ValidateResponse {
   ValidateResponseData data = 1;
 }
 
-// Refresh token
-message RefreshRequest {
-  string refreshToken = 1;
-}
