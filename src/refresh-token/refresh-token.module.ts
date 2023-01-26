@@ -32,24 +32,21 @@ import { RefreshTokenService } from './services/refresh-token.service';
     JwtModule.registerAsync({
       imports: [ParamsModule],
       useFactory: async (
-        JWT_REFRESH_PRIVATE_KEY: string,
-        JWT_REFRESH_PUBLIC_KEY: string,
+        JWT_REFRESH_SECRET: string,
         JWT_REFRESH_EXPIRES_IN: string,
-        JWT_ALGORITHM: any,
+        JWT_REFRESH_ALGORITHM: any,
       ) => ({
-        privateKey: JWT_REFRESH_PRIVATE_KEY,
-        publicKey: JWT_REFRESH_PUBLIC_KEY,
+        secret: JWT_REFRESH_SECRET,
         signOptions: {
-          algorithm: JWT_ALGORITHM,
+          algorithm: JWT_REFRESH_ALGORITHM,
           expiresIn: JWT_REFRESH_EXPIRES_IN,
         },
-        validateOptions: { algorithms: [JWT_ALGORITHM] },
+        validateOptions: { algorithms: [JWT_REFRESH_ALGORITHM] },
       }),
       inject: [
-        PARAMETERS.JWT_REFRESH_PRIVATE_KEY,
-        PARAMETERS.JWT_REFRESH_PUBLIC_KEY,
+        PARAMETERS.JWT_REFRESH_SECRET,
         PARAMETERS.JWT_REFRESH_EXPIRES_IN,
-        PARAMETERS.JWT_ALGORITHM,
+        PARAMETERS.JWT_REFRESH_ALGORITHM,
       ],
     }),
   ],

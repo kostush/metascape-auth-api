@@ -5,12 +5,6 @@ export interface TokenRepositoryInterface {
 
   getOneById(id: string, withRelation?: boolean): Promise<TokenModel>;
 
-  findOneBySessionId(tokenId: string): Promise<TokenModel | null>;
-
-  getOneBySessionId(tokenId: string): Promise<TokenModel>;
-
-  getOneNotClosedById(id: string, withRelation?: boolean): Promise<TokenModel>;
-
   insert(session: TokenModel): Promise<void>;
 
   update(session: TokenModel): Promise<void>;
