@@ -6,7 +6,6 @@ import {
 } from 'metascape-user-api-client';
 import { LoginResponseDataDto } from '../responses/login-response-data.dto';
 import { LoginByEmailRequest } from '../requests/login-by-email.request';
-import { JwtService } from '@nestjs/jwt';
 import { lastValueFrom } from 'rxjs';
 import { JwtPayloadFactoryInterface } from '../factory/jwt-payload-factory.interface';
 import {
@@ -16,6 +15,8 @@ import {
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
+import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
+import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -26,13 +27,16 @@ export class LoginByEmailUseCase {
     private readonly walletsServiceClient: WalletsServiceClient,
     @Inject(JwtPayloadFactoryInterface)
     private readonly jwtPayloadFactory: JwtPayloadFactoryInterface,
-    private readonly jwtService: JwtService,
     @Inject(SessionFactoryInterface)
     private readonly sessionFactory: SessionFactoryInterface,
     @Inject(SessionRepositoryInterface)
     private readonly sessionRepository: SessionRepositoryInterface,
     @Inject(TokenFactoryInterface)
     private readonly tokenFactory: TokenFactoryInterface,
+    @Inject(AuthTokenInterface)
+    private readonly authTokenService: AuthTokenInterface,
+    @Inject(RefreshTokenInterface)
+    private readonly refreshTokenService: RefreshTokenInterface,
   ) {}
 
   async execute(
@@ -57,7 +61,8 @@ export class LoginByEmailUseCase {
       session.id,
       token.id,
     );
-    const jwt = this.jwtService.sign(payload);
-    return new SuccessResponse(new LoginResponseDataDto(jwt));
+    const authJwt = this.authTokenService.sign(payload);
+    const refreshJwt = this.refreshTokenService.sign(payload);
+    return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
   }
 }

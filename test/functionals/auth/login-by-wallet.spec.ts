@@ -14,9 +14,11 @@ import { GrpcException, GrpcExceptionFactory } from 'metascape-common-api';
 import { GrpcMockServer } from '@alenon/grpc-mock-server';
 import { SignNonceRequest, WalletResponse } from 'metascape-wallet-api-client';
 import { GetUserByIdRequest, UserResponse } from 'metascape-user-api-client';
-import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadDataDto } from 'metascape-common-api';
 import { WalletNotAttachedToUserException } from '../../../src/auth/exceptions/wallet-not-attached-to-user.exception';
+import { AuthTokenService } from '../../../src/auth-token/services/auth-token.service';
+import { RefreshTokenService } from '../../../src/refresh-token/services/refresh-token.service';
+import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
+import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
 
 describe('Login by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -24,7 +26,8 @@ describe('Login by wallet functional tests', () => {
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let jwtService: JwtService;
+  let authTokenService: AuthTokenService;
+  let refreshTokenService: RefreshTokenService;
   const walletMockResponse: WalletResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
@@ -61,7 +64,8 @@ describe('Login by wallet functional tests', () => {
   beforeAll(async () => {
     // run gRPC server
     app = await createMockAppHelper();
-    jwtService = app.get(JwtService);
+    authTokenService = app.get(AuthTokenInterface);
+    refreshTokenService = app.get(RefreshTokenInterface);
     await app.listen();
 
     // create gRPC client
@@ -197,10 +201,18 @@ describe('Login by wallet functional tests', () => {
       }),
     );
 
-    const jwtPayload = jwtService.verify<JwtPayloadDataDto>(
+    const authJwtPayload = authTokenService.verify(
       res?.data?.authToken as string,
     );
-    expect(jwtPayload.businessId).toBe(userMockResponse.data?.businessId);
-    expect(jwtPayload.id).toBe(userMockResponse.data?.id);
+    const refreshJwtPayload = refreshTokenService.verify(
+      res?.data?.refreshToken as string,
+    );
+    expect(res.data?.refreshToken).toBeDefined();
+    expect(res.data?.authToken).toBeDefined();
+    expect(authJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
+    expect(authJwtPayload.id).toBe(userMockResponse.data?.id);
+    expect(authJwtPayload.sessionId).toBeDefined();
+    expect(authJwtPayload.tokenId).toBeDefined();
+    expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
   });
 });
