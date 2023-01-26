@@ -6,6 +6,7 @@ import { RefreshTokenFactoryInterface } from './factory/refresh-token-factory.in
 import { RefreshTokenFactoryService } from './factory/refresh-token-factory.service';
 import { RefreshTokenInterface } from './services/refresh-token.interface';
 import { RefreshTokenService } from './services/refresh-token.service';
+import { Algorithm } from 'jsonwebtoken';
 
 @Module({
   providers: [
@@ -31,22 +32,24 @@ import { RefreshTokenService } from './services/refresh-token.service';
   imports: [
     JwtModule.registerAsync({
       imports: [ParamsModule],
-      useFactory: async (
-        JWT_REFRESH_SECRET: string,
+      async useFactory(
+        JWT_REFRESH_ALGORITHM: Algorithm,
         JWT_REFRESH_EXPIRES_IN: string,
-        JWT_REFRESH_ALGORITHM: any,
-      ) => ({
-        secret: JWT_REFRESH_SECRET,
-        signOptions: {
-          algorithm: JWT_REFRESH_ALGORITHM,
-          expiresIn: JWT_REFRESH_EXPIRES_IN,
-        },
-        validateOptions: { algorithms: [JWT_REFRESH_ALGORITHM] },
-      }),
+        JWT_REFRESH_SECRET: string,
+      ) {
+        return {
+          signOptions: {
+            algorithm: JWT_REFRESH_ALGORITHM,
+            expiresIn: JWT_REFRESH_EXPIRES_IN,
+          },
+          secret: JWT_REFRESH_SECRET,
+          validateOptions: { algorithms: [JWT_REFRESH_ALGORITHM] },
+        };
+      },
       inject: [
-        PARAMETERS.JWT_REFRESH_SECRET,
-        PARAMETERS.JWT_REFRESH_EXPIRES_IN,
         PARAMETERS.JWT_REFRESH_ALGORITHM,
+        PARAMETERS.JWT_REFRESH_EXPIRES_IN,
+        PARAMETERS.JWT_REFRESH_SECRET,
       ],
     }),
   ],

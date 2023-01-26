@@ -6,6 +6,7 @@ import { AuthTokenFactoryInterface } from './factory/auth-token-factory.interfac
 import { AuthTokenFactoryService } from './factory/auth-token-factory.service';
 import { AuthTokenInterface } from './services/auth-token.interface';
 import { AuthTokenService } from './services/auth-token.service';
+import { Algorithm } from 'jsonwebtoken';
 
 @Module({
   providers: [
@@ -35,7 +36,7 @@ import { AuthTokenService } from './services/auth-token.service';
         JWT_AUTH_PRIVATE_KEY: string,
         JWT_AUTH_PUBLIC_KEY: string,
         JWT_AUTH_EXPIRES_IN: string,
-        JWT_AUTH_ALGORITHM: any,
+        JWT_AUTH_ALGORITHM: Algorithm,
       ) => ({
         privateKey: JWT_AUTH_PRIVATE_KEY,
         publicKey: JWT_AUTH_PUBLIC_KEY,
