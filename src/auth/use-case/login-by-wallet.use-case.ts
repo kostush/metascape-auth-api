@@ -66,8 +66,8 @@ export class LoginByWalletUseCase {
 
     return this.loginResponseFactory.createLoginResponse(
       userData,
-      session,
-      token,
+      session.id,
+      token.id,
     );
   }
 }

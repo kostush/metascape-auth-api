@@ -57,8 +57,8 @@ export class LoginByEmailUseCase {
 
     return this.loginResponseFactory.createLoginResponse(
       userData,
-      session,
-      token,
+      session.id,
+      token.id,
     );
   }
 }

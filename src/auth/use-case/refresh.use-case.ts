@@ -64,16 +64,13 @@ export class RefreshUseCase {
         id: oldToken.session!.userId,
       }),
     );
-    const session = this.sessionFactory.createSession(userData.data!.id);
-    const token = this.tokenFactory.createToken(session.id);
-
-    await this.sessionRepository.insert(session);
+    const token = this.tokenFactory.createToken(oldToken.sessionId);
     await this.tokenRepository.insert(token);
 
     return this.loginResponseFactory.createLoginResponse(
       userData,
-      session,
-      token,
+      oldToken.sessionId,
+      token.id,
     );
   }
 }

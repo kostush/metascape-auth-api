@@ -6,8 +6,6 @@ import { LoginResponseDataDto } from '../responses/login-response-data.dto';
 import { JwtPayloadFactoryInterface } from './jwt-payload-factory.interface';
 import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
-import { SessionModel } from '../models/session.model';
-import { TokenModel } from '../models/token.model';
 
 @Injectable()
 export class LoginResponseFactoryService
@@ -23,13 +21,13 @@ export class LoginResponseFactoryService
   ) {}
   createLoginResponse = (
     userData: UserResponse,
-    session: SessionModel,
-    token: TokenModel,
+    sessionId: string,
+    tokenId: string,
   ): SuccessResponse<LoginResponseDataDto> => {
     const payload = this.jwtPayloadFactory.createJwtPayload(
       userData.data!,
-      session.id,
-      token.id,
+      sessionId,
+      tokenId,
     );
     const authJwt = this.authTokenService.sign(payload);
     const refreshJwt = this.refreshTokenService.sign({
