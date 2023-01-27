@@ -18,6 +18,7 @@ import { SessionRepositoryInterface } from '../repositories/session-repository.i
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
 import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
+import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
 
 @Injectable()
 export class LoginByWalletUseCase {
@@ -32,6 +33,8 @@ export class LoginByWalletUseCase {
     private readonly sessionFactory: SessionFactoryInterface,
     @Inject(SessionRepositoryInterface)
     private readonly sessionRepository: SessionRepositoryInterface,
+    @Inject(TokenRepositoryInterface)
+    private readonly tokenRepository: TokenRepositoryInterface,
     @Inject(TokenFactoryInterface)
     private readonly tokenFactory: TokenFactoryInterface,
     @Inject(AuthTokenInterface)
@@ -61,17 +64,18 @@ export class LoginByWalletUseCase {
 
     const session = this.sessionFactory.createSession(userData.data!.id);
     const token = this.tokenFactory.createToken(session.id);
-    session.tokens = [token];
-
     await this.sessionRepository.insert(session);
+    await this.tokenRepository.insert(token);
+
     const payload = this.jwtPayloadFactory.createJwtPayload(
       userData.data!,
       session.id,
       token.id,
     );
     const authJwt = this.authTokenService.sign(payload);
-    const refreshJwt = this.refreshTokenService.sign(payload);
-
+    const refreshJwt = this.refreshTokenService.sign({
+      tokenId: payload.tokenId,
+    });
     return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
   }
 }

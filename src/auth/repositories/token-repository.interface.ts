@@ -5,11 +5,11 @@ export interface TokenRepositoryInterface {
 
   getOneById(id: string, withRelation?: boolean): Promise<TokenModel>;
 
-  insert(session: TokenModel): Promise<void>;
+  insert(token: TokenModel): Promise<void>;
 
-  update(session: TokenModel): Promise<void>;
+  update(token: TokenModel): Promise<void>;
 
-  delete(session: TokenModel): Promise<void>;
+  delete(token: TokenModel): Promise<void>;
 }
 
 export const TokenRepositoryInterface = Symbol('TokenRepositoryInterface');

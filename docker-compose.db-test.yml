@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  token_db_test:
+  auth_db_test:
     container_name: auth_db_test
     image: postgres
     environment:

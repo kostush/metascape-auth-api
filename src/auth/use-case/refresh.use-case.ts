@@ -1,11 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { SuccessResponse } from 'metascape-common-api';
 import {
   USERS_SERVICE_NAME,
   UsersServiceClient,
 } from 'metascape-user-api-client';
 import { LoginResponseDataDto } from '../responses/login-response-data.dto';
-import { LoginByEmailRequest } from '../requests/login-by-email.request';
 import { lastValueFrom } from 'rxjs';
 import { JwtPayloadFactoryInterface } from '../factory/jwt-payload-factory.interface';
 import {
@@ -14,28 +13,28 @@ import {
 } from 'metascape-wallet-api-client';
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
-import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
 import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
+import { RefreshRequest } from '../requests/refresh.request';
+import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
+import { TokenIsClosedException } from '../exceptions/token-is-closed.exception';
 
 @Injectable()
-export class LoginByEmailUseCase {
+export class RefreshUseCase {
   constructor(
     @Inject(USERS_SERVICE_NAME)
     private readonly usersServiceClient: UsersServiceClient,
-    @Inject(WALLETS_SERVICE_NAME)
-    private readonly walletsServiceClient: WalletsServiceClient,
     @Inject(JwtPayloadFactoryInterface)
     private readonly jwtPayloadFactory: JwtPayloadFactoryInterface,
     @Inject(SessionFactoryInterface)
     private readonly sessionFactory: SessionFactoryInterface,
     @Inject(SessionRepositoryInterface)
     private readonly sessionRepository: SessionRepositoryInterface,
-    @Inject(TokenFactoryInterface)
-    private readonly tokenFactory: TokenFactoryInterface,
     @Inject(TokenRepositoryInterface)
     private readonly tokenRepository: TokenRepositoryInterface,
+    @Inject(TokenFactoryInterface)
+    private readonly tokenFactory: TokenFactoryInterface,
     @Inject(AuthTokenInterface)
     private readonly authTokenService: AuthTokenInterface,
     @Inject(RefreshTokenInterface)
@@ -43,24 +42,38 @@ export class LoginByEmailUseCase {
   ) {}
 
   async execute(
-    request: LoginByEmailRequest,
+    request: RefreshRequest,
   ): Promise<SuccessResponse<LoginResponseDataDto>> {
+    let refreshTokenDto;
+    try {
+      refreshTokenDto = this.refreshTokenService.verify(request.refreshToken);
+    } catch (e) {
+      throw new BadRequestException('Refresh token is not valid or expired');
+    }
+
+    const token = await this.tokenRepository.getOneById(
+      refreshTokenDto.tokenId,
+      true,
+    );
+    if (token.isClosed || token.session!.isClosed) {
+      throw new TokenIsClosedException(
+        `Token ${refreshTokenDto.tokenId} is closed`,
+      );
+    }
     const userData = await lastValueFrom(
-      this.usersServiceClient.getUserByEmailAndPassword({
-        businessId: request.businessId,
-        email: request.email,
-        password: request.password,
+      this.usersServiceClient.getUserById({
+        id: token.session!.userId,
       }),
     );
+    const newSession = this.sessionFactory.createSession(userData.data!.id);
+    const newToken = this.tokenFactory.createToken(newSession.id);
+    newSession.tokens = [newToken];
 
-    const session = this.sessionFactory.createSession(userData.data!.id);
-    const token = this.tokenFactory.createToken(session.id);
-    await this.sessionRepository.insert(session);
-    await this.tokenRepository.insert(token);
+    await this.sessionRepository.insert(newSession);
 
     const payload = this.jwtPayloadFactory.createJwtPayload(
       userData.data!,
-      session.id,
+      newSession.id,
       token.id,
     );
     const authJwt = this.authTokenService.sign(payload);

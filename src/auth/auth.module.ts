@@ -15,6 +15,7 @@ import { LoginByWalletUseCase } from './use-case/login-by-wallet.use-case';
 import { LoginByEmailUseCase } from './use-case/login-by-email.use-case';
 import { ValidateUseCase } from './use-case/validate.use-case';
 import { ValidateController } from './controllers/validate.controller';
+import { RefreshController } from './controllers/refresh.controller';
 import {
   WalletApiClientFactory,
   WALLETS_SERVICE_NAME,
@@ -37,6 +38,7 @@ import { TokenRepositoryInterface } from './repositories/token-repository.interf
 import { TokenRepository } from './repositories/token-repository.service';
 import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
 import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
+import { RefreshUseCase } from './use-case/refresh.use-case';
 
 @Module({
   controllers: [
@@ -45,6 +47,7 @@ import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service'
     LoginByWalletController,
     LoginByEmailController,
     ValidateController,
+    RefreshController,
   ],
   providers: [
     {
@@ -91,6 +94,7 @@ import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service'
     LoginByWalletUseCase,
     LoginByEmailUseCase,
     ValidateUseCase,
+    RefreshUseCase,
   ],
   imports: [
     ParamsModule,
