@@ -39,6 +39,8 @@ import { TokenRepository } from './repositories/token-repository.service';
 import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
 import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
 import { RefreshUseCase } from './use-case/refresh.use-case';
+import { LoginResponseFactoryInterface } from './factory/login-response-factory.interface';
+import { LoginResponseFactoryService } from './factory/login-response-factory.service';
 
 @Module({
   controllers: [
@@ -87,6 +89,10 @@ import { RefreshUseCase } from './use-case/refresh.use-case';
     {
       provide: JwtPayloadFactoryInterface,
       useClass: JwtPayloadFactoryService,
+    },
+    {
+      provide: LoginResponseFactoryInterface,
+      useClass: LoginResponseFactoryService,
     },
 
     RegisterByEmailUseCase,

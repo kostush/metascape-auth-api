@@ -16,8 +16,7 @@ import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
-import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
-import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
+import { LoginResponseFactoryInterface } from '../factory/login-response-factory.interface';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -36,10 +35,8 @@ export class LoginByEmailUseCase {
     private readonly tokenFactory: TokenFactoryInterface,
     @Inject(TokenRepositoryInterface)
     private readonly tokenRepository: TokenRepositoryInterface,
-    @Inject(AuthTokenInterface)
-    private readonly authTokenService: AuthTokenInterface,
-    @Inject(RefreshTokenInterface)
-    private readonly refreshTokenService: RefreshTokenInterface,
+    @Inject(LoginResponseFactoryInterface)
+    private readonly loginResponseFactory: LoginResponseFactoryInterface,
   ) {}
 
   async execute(
@@ -58,15 +55,10 @@ export class LoginByEmailUseCase {
     await this.sessionRepository.insert(session);
     await this.tokenRepository.insert(token);
 
-    const payload = this.jwtPayloadFactory.createJwtPayload(
-      userData.data!,
-      session.id,
-      token.id,
+    return this.loginResponseFactory.createLoginResponse(
+      userData,
+      session,
+      token,
     );
-    const authJwt = this.authTokenService.sign(payload);
-    const refreshJwt = this.refreshTokenService.sign({
-      tokenId: payload.tokenId,
-    });
-    return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
   }
 }

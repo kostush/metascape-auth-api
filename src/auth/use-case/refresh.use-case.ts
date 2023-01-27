@@ -7,18 +7,14 @@ import {
 import { LoginResponseDataDto } from '../responses/login-response-data.dto';
 import { lastValueFrom } from 'rxjs';
 import { JwtPayloadFactoryInterface } from '../factory/jwt-payload-factory.interface';
-import {
-  WALLETS_SERVICE_NAME,
-  WalletsServiceClient,
-} from 'metascape-wallet-api-client';
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
-import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
 import { RefreshRequest } from '../requests/refresh.request';
 import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
 import { TokenIsClosedException } from '../exceptions/token-is-closed.exception';
+import { LoginResponseFactoryInterface } from '../factory/login-response-factory.interface';
 
 @Injectable()
 export class RefreshUseCase {
@@ -35,8 +31,8 @@ export class RefreshUseCase {
     private readonly tokenRepository: TokenRepositoryInterface,
     @Inject(TokenFactoryInterface)
     private readonly tokenFactory: TokenFactoryInterface,
-    @Inject(AuthTokenInterface)
-    private readonly authTokenService: AuthTokenInterface,
+    @Inject(LoginResponseFactoryInterface)
+    private readonly loginResponseFactory: LoginResponseFactoryInterface,
     @Inject(RefreshTokenInterface)
     private readonly refreshTokenService: RefreshTokenInterface,
   ) {}
@@ -51,35 +47,33 @@ export class RefreshUseCase {
       throw new BadRequestException('Refresh token is not valid or expired');
     }
 
-    const token = await this.tokenRepository.getOneById(
+    const oldToken = await this.tokenRepository.getOneById(
       refreshTokenDto.tokenId,
       true,
     );
-    if (token.isClosed || token.session!.isClosed) {
+    if (oldToken.isClosed || oldToken.session!.isClosed) {
       throw new TokenIsClosedException(
         `Token ${refreshTokenDto.tokenId} is closed`,
       );
     }
+    oldToken.isClosed = true;
+    await this.tokenRepository.update(oldToken);
+
     const userData = await lastValueFrom(
       this.usersServiceClient.getUserById({
-        id: token.session!.userId,
+        id: oldToken.session!.userId,
       }),
     );
-    const newSession = this.sessionFactory.createSession(userData.data!.id);
-    const newToken = this.tokenFactory.createToken(newSession.id);
-    newSession.tokens = [newToken];
+    const session = this.sessionFactory.createSession(userData.data!.id);
+    const token = this.tokenFactory.createToken(session.id);
 
-    await this.sessionRepository.insert(newSession);
+    await this.sessionRepository.insert(session);
+    await this.tokenRepository.insert(token);
 
-    const payload = this.jwtPayloadFactory.createJwtPayload(
-      userData.data!,
-      newSession.id,
-      token.id,
+    return this.loginResponseFactory.createLoginResponse(
+      userData,
+      session,
+      token,
     );
-    const authJwt = this.authTokenService.sign(payload);
-    const refreshJwt = this.refreshTokenService.sign({
-      tokenId: payload.tokenId,
-    });
-    return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
   }
 }
