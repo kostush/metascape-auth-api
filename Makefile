@@ -90,12 +90,6 @@ dockers-logs: ## View output from project containers
 dockers-bash: ## Enter in container with the terminal
 	${EXEC_SERVICE} sh
 
-adminer-start-d: ## Create and start adminer for database management
-	$(DOCKER_COMPOSE_ADMINER) up -d
-
-adminer-down: ## Stop and remove adminer
-	$(DOCKER_COMPOSE_ADMINER) down
-
 protoc-gen-doc-start: ##  Run protoc-gen-doc to generate doc of endpoints from proto
 	$(DOCKER_COMPOSE_PROTOC_GEN_DOC) up
 
