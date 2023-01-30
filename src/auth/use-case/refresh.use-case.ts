@@ -16,6 +16,7 @@ import { TokenRepositoryInterface } from '../repositories/token-repository.inter
 import { TokenIsClosedException } from '../exceptions/token-is-closed.exception';
 import { LoginResponseFactoryInterface } from '../factory/login-response-factory.interface';
 import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
+import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
 
 @Injectable()
 export class RefreshUseCase {
@@ -54,6 +55,12 @@ export class RefreshUseCase {
       refreshTokenDto.tokenId,
       true,
     );
+
+    if (oldToken.session!.isClosed) {
+      throw new SessionIsClosedException(
+        `Session ${oldToken.session!.id} is closed`,
+      );
+    }
     if (oldToken.isClosed) {
       oldToken.session!.isClosed = true;
       await this.sessionRepository.update(oldToken.session!);
@@ -62,7 +69,6 @@ export class RefreshUseCase {
       );
     }
     oldToken.isClosed = true;
-    await this.tokenRepository.update(oldToken);
 
     const userData = await lastValueFrom(
       this.usersServiceClient.getUserById({
@@ -70,6 +76,7 @@ export class RefreshUseCase {
       }),
     );
     const token = this.tokenFactory.createToken(oldToken.sessionId);
+    await this.tokenRepository.update(oldToken);
     await this.tokenRepository.insert(token);
 
     const payload = this.jwtPayloadFactory.createJwtPayload(

@@ -22,9 +22,11 @@ import {
   GetUserByIdRequest,
 } from 'metascape-user-api-client';
 import { TokenRepositoryInterface } from '../../../src/auth/repositories/token-repository.interface';
+import { SessionRepositoryInterface } from '../../../src/auth/repositories/session-repository.interface';
 import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
 import { TokenIsClosedException } from '../../../src/auth/exceptions/token-is-closed.exception';
+import { SessionIsClosedException } from '../../../src/auth/exceptions/session-is-closed.exception';
 
 describe('Refresh functional tests', () => {
   let app: INestMicroservice;
@@ -33,6 +35,7 @@ describe('Refresh functional tests', () => {
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
   let tokenRepository: TokenRepositoryInterface;
+  let sessionRepository: SessionRepositoryInterface;
   let refreshTokenService: RefreshTokenInterface;
   let authTokenService: AuthTokenInterface;
 
@@ -74,6 +77,7 @@ describe('Refresh functional tests', () => {
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
     tokenRepository = app.get(TokenRepositoryInterface);
+    sessionRepository = app.get(SessionRepositoryInterface);
     await app.listen();
 
     // create gRPC client
@@ -175,6 +179,38 @@ describe('Refresh functional tests', () => {
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain(
         `Token ${token.id} is closed`,
+      );
+    }
+  });
+
+  it('should fail due to session is closed', async () => {
+    const res = await lastValueFrom(
+      client.loginByEmail({
+        businessId: userMockResponse.data?.businessId as string,
+        email: userMockResponse.data?.email as string,
+        password: mockUserPassword as string,
+      }),
+    );
+    const refreshTokenDto = refreshTokenService.verify(res.data!.refreshToken);
+    const token = await tokenRepository.getOneById(
+      refreshTokenDto.tokenId,
+      true,
+    );
+    const session = token.session!;
+    session.isClosed = true;
+    await sessionRepository.update(session);
+    try {
+      await lastValueFrom(
+        client.refresh({
+          refreshToken: res?.data?.refreshToken as string,
+        }),
+      );
+    } catch (e) {
+      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
+      expect(grpcException.message).toBe(SessionIsClosedException.name);
+      expect(grpcException.getErrors()).toBeInstanceOf(Array);
+      expect(grpcException.getErrors()[0]).toContain(
+        `Session ${session.id} is closed`,
       );
     }
   });
