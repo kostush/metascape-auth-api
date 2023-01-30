@@ -15,6 +15,7 @@ import { RefreshRequest } from '../requests/refresh.request';
 import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
 import { TokenIsClosedException } from '../exceptions/token-is-closed.exception';
 import { LoginResponseFactoryInterface } from '../factory/login-response-factory.interface';
+import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
 
 @Injectable()
 export class RefreshUseCase {
@@ -35,6 +36,8 @@ export class RefreshUseCase {
     private readonly loginResponseFactory: LoginResponseFactoryInterface,
     @Inject(RefreshTokenInterface)
     private readonly refreshTokenService: RefreshTokenInterface,
+    @Inject(AuthTokenInterface)
+    private readonly authTokenService: AuthTokenInterface,
   ) {}
 
   async execute(
@@ -51,7 +54,9 @@ export class RefreshUseCase {
       refreshTokenDto.tokenId,
       true,
     );
-    if (oldToken.isClosed || oldToken.session!.isClosed) {
+    if (oldToken.isClosed) {
+      oldToken.session!.isClosed = true;
+      await this.sessionRepository.update(oldToken.session!);
       throw new TokenIsClosedException(
         `Token ${refreshTokenDto.tokenId} is closed`,
       );
@@ -67,10 +72,16 @@ export class RefreshUseCase {
     const token = this.tokenFactory.createToken(oldToken.sessionId);
     await this.tokenRepository.insert(token);
 
-    return this.loginResponseFactory.createLoginResponse(
-      userData,
+    const payload = this.jwtPayloadFactory.createJwtPayload(
+      userData.data!,
       oldToken.sessionId,
       token.id,
     );
+    const authJwt = this.authTokenService.sign(payload);
+    const refreshJwt = this.refreshTokenService.sign({
+      tokenId: payload.tokenId,
+    });
+
+    return this.loginResponseFactory.createLoginResponse(authJwt, refreshJwt);
   }
 }

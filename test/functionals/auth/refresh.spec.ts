@@ -146,7 +146,7 @@ describe('Refresh functional tests', () => {
       expect(grpcException.message).toBe(BadRequestException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain(
-        'Refresh token is not valid or expired',
+        'refreshToken must be a jwt string',
       );
     }
   });
@@ -187,7 +187,6 @@ describe('Refresh functional tests', () => {
         password: mockUserPassword as string,
       }),
     );
-
     const refreshResult = await lastValueFrom(
       client.refresh({
         refreshToken: res?.data?.refreshToken as string,

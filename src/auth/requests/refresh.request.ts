@@ -1,8 +1,8 @@
 import { RefreshRequest as IRefreshRequest } from '../auth.pb';
-import { IsString } from 'class-validator';
+import { IsRefreshToken } from 'metascape-common-api';
 
 export class RefreshRequest implements IRefreshRequest {
-  @IsString()
+  @IsRefreshToken()
   readonly refreshToken: string;
 
   constructor(refreshToken: string) {
