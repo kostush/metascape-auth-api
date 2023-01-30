@@ -36,8 +36,6 @@ import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
 import { AuthTokenModule } from '../auth-token/auth-token.module';
 import { TokenRepositoryInterface } from './repositories/token-repository.interface';
 import { TokenRepository } from './repositories/token-repository.service';
-import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
-import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
 import { RefreshUseCase } from './use-case/refresh.use-case';
 import { LoginResponseFactoryInterface } from './factory/login-response-factory.interface';
 import { LoginResponseFactoryService } from './factory/login-response-factory.service';
@@ -85,10 +83,6 @@ import { LoginResponseFactoryService } from './factory/login-response-factory.se
     {
       provide: TokenRepositoryInterface,
       useClass: TokenRepository,
-    },
-    {
-      provide: JwtPayloadFactoryInterface,
-      useClass: JwtPayloadFactoryService,
     },
     {
       provide: LoginResponseFactoryInterface,

@@ -1,23 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthTokenFactoryInterface } from './auth-token-factory.interface';
-import { UserResponseData } from 'metascape-user-api-client';
 import { JwtPayloadDataDto } from 'metascape-common-api';
+import { UserResponseData } from 'metascape-user-api-client';
 
 @Injectable()
 export class AuthTokenFactoryService implements AuthTokenFactoryInterface {
   constructor(private readonly jwtService: JwtService) {}
-  createToken(
+  createToken(payload: JwtPayloadDataDto): string {
+    return this.jwtService.sign(payload);
+  }
+  createPayload(
     user: UserResponseData,
     sessionId: string,
     tokenId: string,
-  ): string {
-    const payload: JwtPayloadDataDto = {
+  ): JwtPayloadDataDto {
+    return {
       businessId: user.businessId,
       id: user.id,
-      sessionId,
-      tokenId,
+      sessionId: sessionId,
+      tokenId: tokenId,
     };
-    return this.jwtService.sign(payload);
   }
 }

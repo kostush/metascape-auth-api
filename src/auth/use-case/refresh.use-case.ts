@@ -6,7 +6,6 @@ import {
 } from 'metascape-user-api-client';
 import { LoginResponseDataDto } from '../responses/login-response-data.dto';
 import { lastValueFrom } from 'rxjs';
-import { JwtPayloadFactoryInterface } from '../factory/jwt-payload-factory.interface';
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
@@ -17,14 +16,14 @@ import { TokenIsClosedException } from '../exceptions/token-is-closed.exception'
 import { LoginResponseFactoryInterface } from '../factory/login-response-factory.interface';
 import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
 import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
+import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refresh-token-factory.interface';
+import { AuthTokenFactoryInterface } from '../../auth-token/factory/auth-token-factory.interface';
 
 @Injectable()
 export class RefreshUseCase {
   constructor(
     @Inject(USERS_SERVICE_NAME)
     private readonly usersServiceClient: UsersServiceClient,
-    @Inject(JwtPayloadFactoryInterface)
-    private readonly jwtPayloadFactory: JwtPayloadFactoryInterface,
     @Inject(SessionFactoryInterface)
     private readonly sessionFactory: SessionFactoryInterface,
     @Inject(SessionRepositoryInterface)
@@ -39,6 +38,10 @@ export class RefreshUseCase {
     private readonly refreshTokenService: RefreshTokenInterface,
     @Inject(AuthTokenInterface)
     private readonly authTokenService: AuthTokenInterface,
+    @Inject(RefreshTokenFactoryInterface)
+    private readonly refreshTokenFactoryService: RefreshTokenFactoryInterface,
+    @Inject(AuthTokenFactoryInterface)
+    private readonly authTokenFactoryService: AuthTokenFactoryInterface,
   ) {}
 
   async execute(
@@ -78,16 +81,17 @@ export class RefreshUseCase {
     const token = this.tokenFactory.createToken(oldToken.sessionId);
     await this.tokenRepository.update(oldToken);
     await this.tokenRepository.insert(token);
-
-    const payload = this.jwtPayloadFactory.createJwtPayload(
+    const authPayload = this.authTokenFactoryService.createPayload(
       userData.data!,
       oldToken.sessionId,
       token.id,
     );
-    const authJwt = this.authTokenService.sign(payload);
-    const refreshJwt = this.refreshTokenService.sign({
-      tokenId: payload.tokenId,
-    });
+    const refreshPayload = this.refreshTokenFactoryService.createPayload(
+      token.id,
+    );
+    const authJwt = this.authTokenFactoryService.createToken(authPayload);
+    const refreshJwt =
+      this.refreshTokenFactoryService.createToken(refreshPayload);
 
     return this.loginResponseFactory.createLoginResponse(authJwt, refreshJwt);
   }
