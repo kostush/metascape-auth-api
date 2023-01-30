@@ -13,17 +13,30 @@ import { LoginByWalletController } from './controllers/login-by-wallet.controlle
 import { LoginByEmailController } from './controllers/login-by-email.controller';
 import { LoginByWalletUseCase } from './use-case/login-by-wallet.use-case';
 import { LoginByEmailUseCase } from './use-case/login-by-email.use-case';
-import { JwtModule } from '@nestjs/jwt';
 import { ValidateUseCase } from './use-case/validate.use-case';
 import { ValidateController } from './controllers/validate.controller';
 import {
   WalletApiClientFactory,
   WALLETS_SERVICE_NAME,
 } from 'metascape-wallet-api-client';
-import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
-import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
 import { WalletResponseFactoryInterface } from './factory/wallet-response-factory.interface';
 import { WalletResponseFactory } from './factory/wallet-response-factory.service';
+import { SessionRepositoryInterface } from './repositories/session-repository.interface';
+import { SessionFactoryInterface } from './factory/session-factory.interface';
+import { SessionFactory } from './factory/session-factory.service';
+import { TokenFactoryInterface } from './factory/token-factory.interface';
+import { TokenFactory } from './factory/token-factory.service';
+import { SessionRepository } from './repositories/session-repository.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { SessionSchema } from './schemas/session.schema';
+import { TokenSchema } from './schemas/token.schema';
+import { SharedModule } from 'metascape-common-api';
+import { RefreshTokenModule } from '../refresh-token/refresh-token.module';
+import { AuthTokenModule } from '../auth-token/auth-token.module';
+import { TokenRepositoryInterface } from './repositories/token-repository.interface';
+import { TokenRepository } from './repositories/token-repository.service';
+import { JwtPayloadFactoryInterface } from './factory/jwt-payload-factory.interface';
+import { JwtPayloadFactoryService } from './factory/jwt-payload-factory.service';
 
 @Module({
   controllers: [
@@ -49,13 +62,30 @@ import { WalletResponseFactory } from './factory/wallet-response-factory.service
       inject: [PARAMETERS.WALLET_API_GRPC_URL],
     },
     {
-      provide: JwtPayloadFactoryInterface,
-      useClass: JwtPayloadFactoryService,
-    },
-    {
       provide: WalletResponseFactoryInterface,
       useClass: WalletResponseFactory,
     },
+    {
+      provide: SessionFactoryInterface,
+      useClass: SessionFactory,
+    },
+    {
+      provide: TokenFactoryInterface,
+      useClass: TokenFactory,
+    },
+    {
+      provide: SessionRepositoryInterface,
+      useClass: SessionRepository,
+    },
+    {
+      provide: TokenRepositoryInterface,
+      useClass: TokenRepository,
+    },
+    {
+      provide: JwtPayloadFactoryInterface,
+      useClass: JwtPayloadFactoryService,
+    },
+
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,
     LoginByWalletUseCase,
@@ -64,26 +94,10 @@ import { WalletResponseFactory } from './factory/wallet-response-factory.service
   ],
   imports: [
     ParamsModule,
-    JwtModule.registerAsync({
-      imports: [ParamsModule],
-      useFactory: async (
-        JWT_PRIVATE_KEY: string,
-        JWT_PUBLIC_KEY: string,
-        JWT_EXPIRES_IN: string,
-        JWT_ALGORITHM: any,
-      ) => ({
-        privateKey: JWT_PRIVATE_KEY,
-        publicKey: JWT_PUBLIC_KEY,
-        signOptions: { algorithm: JWT_ALGORITHM, expiresIn: JWT_EXPIRES_IN },
-        validateOptions: { algorithms: [JWT_ALGORITHM] },
-      }),
-      inject: [
-        PARAMETERS.JWT_PRIVATE_KEY,
-        PARAMETERS.JWT_PUBLIC_KEY,
-        PARAMETERS.JWT_EXPIRES_IN,
-        PARAMETERS.JWT_ALGORITHM,
-      ],
-    }),
+    TypeOrmModule.forFeature([SessionSchema, TokenSchema]),
+    SharedModule,
+    RefreshTokenModule,
+    AuthTokenModule,
   ],
 })
 export class AuthModule {}

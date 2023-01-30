@@ -1,0 +1,8 @@
+version: '3.7'
+services:
+  schemaspy:
+    image: schemaspy/schemaspy:snapshot
+    tty: true
+    command: ["java", "-jar", "schemaspy.jar", "-t", "pgsql", "-host", "${DB_HOST}", "-port", "${DB_PORT}", "-u", "${DB_USER}", "-p", "${DB_PASSWORD}", "-db", "${DB_NAME}", "-s", "public", "-nopages"]
+    volumes:
+      - ./docs/schemaspy:/output

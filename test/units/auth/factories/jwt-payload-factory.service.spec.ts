@@ -1,5 +1,6 @@
 import { JwtPayloadFactoryService } from '../../../../src/auth/factory/jwt-payload-factory.service';
 import { UserResponseData } from 'metascape-user-api-client';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('JwtPayloadFactoryService', () => {
   let jwtPayloadFactoryService: JwtPayloadFactoryService;
@@ -31,10 +32,19 @@ describe('JwtPayloadFactoryService', () => {
         createdAt: createdAt,
         updatedAt: updatedAt,
       };
-      const jwt = jwtPayloadFactoryService.createJwtPayload(user);
+
+      const sessionId = uuidv4();
+      const tokenId = uuidv4();
+      const jwt = jwtPayloadFactoryService.createJwtPayload(
+        user,
+        sessionId,
+        tokenId,
+      );
 
       expect(jwt.businessId).toBe(businessId);
       expect(jwt.id).toBe(id);
+      expect(jwt.sessionId).toBe(sessionId);
+      expect(jwt.tokenId).toBe(tokenId);
     });
   });
 });

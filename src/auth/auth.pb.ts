@@ -50,6 +50,7 @@ export interface LoginByWalletRequest {
 
 export interface LoginResponseData {
   authToken: string;
+  refreshToken: string;
 }
 
 export interface LoginResponse {

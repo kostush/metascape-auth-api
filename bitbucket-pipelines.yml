@@ -1,6 +1,13 @@
 image: node:16.16.0
 
 definitions:
+  services:
+    postgres:
+      image: postgres
+      environment:
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: admin
+        POSTGRES_DB: test
   steps:
     - step: &Code-quality-step
         name: Run code quality
@@ -16,7 +23,10 @@ definitions:
         name: Run tests
         script:
           - npm install
+          - npm run migration:run:test
           - npm run test
+        services:
+          - postgres
     - step: &Dev-deploy-step
         name: Run deploy to dev server
         deployment: Dev

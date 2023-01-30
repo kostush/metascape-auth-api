@@ -20,8 +20,8 @@ import {
   UserResponse,
   GetUserByEmailAndPasswordRequest,
 } from 'metascape-user-api-client';
-import { JwtService } from '@nestjs/jwt';
-import { JwtPayloadDataDto } from 'metascape-common-api';
+import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
+import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
 
 describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -29,7 +29,8 @@ describe('Register by wallet functional tests', () => {
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let jwtService: JwtService;
+  let authTokenService: AuthTokenInterface;
+  let refreshTokenService: RefreshTokenInterface;
 
   const mockUserPassword = 'password';
 
@@ -67,7 +68,8 @@ describe('Register by wallet functional tests', () => {
   beforeAll(async () => {
     // run gRPC server
     app = await createMockAppHelper();
-    jwtService = app.get(JwtService);
+    authTokenService = app.get(AuthTokenInterface);
+    refreshTokenService = app.get(RefreshTokenInterface);
     await app.listen();
 
     // create gRPC client
@@ -181,10 +183,18 @@ describe('Register by wallet functional tests', () => {
         password: mockUserPassword as string,
       }),
     );
-    const jwtPayload = jwtService.verify<JwtPayloadDataDto>(
+    const authJwtPayload = authTokenService.verify(
       res?.data?.authToken as string,
     );
-    expect(jwtPayload.businessId).toBe(userMockResponse.data?.businessId);
-    expect(jwtPayload.id).toBe(userMockResponse.data?.id);
+    const refreshJwtPayload = refreshTokenService.verify(
+      res?.data?.refreshToken as string,
+    );
+    expect(res.data?.refreshToken).toBeDefined();
+    expect(res.data?.authToken).toBeDefined();
+    expect(authJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
+    expect(authJwtPayload.id).toBe(userMockResponse.data?.id);
+    expect(authJwtPayload.sessionId).toBeDefined();
+    expect(authJwtPayload.tokenId).toBeDefined();
+    expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
   });
 });

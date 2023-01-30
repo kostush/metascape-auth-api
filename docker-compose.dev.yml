@@ -19,6 +19,8 @@ services:
     networks:
       - metascape
       - default
+    depends_on:
+      - auth_db
 networks:
   metascape:
     name: metascape

@@ -20,7 +20,12 @@
     "test": "jest --config ./test/jest.config.js --runInBand",
     "test:watch": "jest --config ./test/jest.config.js --runInBand --watch",
     "test:cov": "jest --config ./test/jest.config.js --runInBand --coverage",
-    "test:debug": "node --inspect-brk=0.0.0.0:9229 -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config test/jest.config.js --runInBand"
+    "test:debug": "node --inspect-brk=0.0.0.0:9229 -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --config test/jest.config.js --runInBand",
+    "migration:generate": "npx typeorm-ts-node-esm migration:generate -d ormconfig.ts migration/migration -p",
+    "migration:create": "npx typeorm-ts-node-esm migration:create migration/migration",
+    "migration:run": "npx typeorm-ts-node-esm migration:run -d ormconfig.ts",
+    "migration:run:test": "npx typeorm-ts-node-esm migration:run -d ormconfig.test.ts",
+    "migration:revert": "npx typeorm-ts-node-esm migration:revert -d ormconfig.ts"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.6.8",
@@ -30,15 +35,19 @@
     "@nestjs/core": "^9.0.0",
     "@nestjs/jwt": "^9.0.0",
     "@nestjs/microservices": "^9.0.8",
+    "@nestjs/typeorm": "^9.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "joi": "^17.6.0",
-    "metascape-common-api": "bitbucket:proj-metascape/metascape-common-api#0.12.0",
+    "metascape-common-api": "bitbucket:proj-metascape/metascape-common-api#0.15.0",
     "metascape-user-api-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-user-api-client#0.6.0",
     "metascape-wallet-api-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-wallet-api-client#0.4.0",
+    "pg": "^8.8.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "typeorm": "^0.3.11",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@alenon/grpc-mock-server": "^3.0.10",
@@ -47,6 +56,7 @@
     "@nestjs/testing": "^9.0.0",
     "@types/jest": "28.1.4",
     "@types/node": "^16.0.0",
+    "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "8.22.0",
