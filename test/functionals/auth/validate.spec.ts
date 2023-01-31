@@ -59,6 +59,9 @@ describe('Validate functional tests', () => {
       },
     ],
   };
+  const wrongJwtToken =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbklkIjoiYTRlNmUwMDctYTY3OC00YzBmLWJmMGMtMjg1ZWMxNmY1ZDc0IiwiaWF0IjoxNjc1MDY4MjQ4LCJleHAiOjE2NzU2NzMwNDh9.7pQT-ikgQ\n' +
+    'LkUWDPB5v6N-0S-OjoNm_MBu-2EiK21NoI';
 
   beforeAll(async () => {
     // run gRPC server
@@ -116,7 +119,7 @@ describe('Validate functional tests', () => {
     try {
       await lastValueFrom(
         client.validate({
-          authToken: 'wrong',
+          authToken: wrongJwtToken,
         }),
       );
     } catch (e) {
@@ -125,7 +128,7 @@ describe('Validate functional tests', () => {
       expect(grpcException.message).toBe(BadRequestException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain(
-        'Auth token is not valid or expired',
+        'authToken must be a jwt string',
       );
     }
   });

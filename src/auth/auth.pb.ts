@@ -78,6 +78,11 @@ export interface ValidateResponse {
   data: ValidateResponseData | undefined;
 }
 
+/** Refresh */
+export interface RefreshRequest {
+  refreshToken: string;
+}
+
 export const METASCAPE_AUTH_PACKAGE_NAME = "metascape.auth";
 
 export interface AuthServiceClient {
@@ -90,6 +95,8 @@ export interface AuthServiceClient {
   loginByEmail(request: LoginByEmailRequest): Observable<LoginResponse>;
 
   validate(request: ValidateRequest): Observable<ValidateResponse>;
+
+  refresh(request: RefreshRequest): Observable<LoginResponse>;
 }
 
 export interface AuthServiceController {
@@ -106,11 +113,20 @@ export interface AuthServiceController {
   loginByEmail(request: LoginByEmailRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
 
   validate(request: ValidateRequest): Promise<ValidateResponse> | Observable<ValidateResponse> | ValidateResponse;
+
+  refresh(request: RefreshRequest): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function(constructor: Function) {
-    const grpcMethods: string[] = ["registerByWallet", "registerByEmail", "loginByWallet", "loginByEmail", "validate"];
+    const grpcMethods: string[] = [
+      "registerByWallet",
+      "registerByEmail",
+      "loginByWallet",
+      "loginByEmail",
+      "validate",
+      "refresh",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);

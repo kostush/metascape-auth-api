@@ -11,13 +11,16 @@ import {
   WALLETS_SERVICE_NAME,
   WalletsServiceClient,
 } from 'metascape-wallet-api-client';
-import { JwtPayloadFactoryInterface } from '../factory/jwt-payload-factory.interface';
 import { WalletNotAttachedToUserException } from '../exceptions/wallet-not-attached-to-user.exception';
 import { SessionFactoryInterface } from '../factory/session-factory.interface';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { TokenFactoryInterface } from '../factory/token-factory.interface';
+import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
+import { LoginResponseFactoryInterface } from '../factory/login-response-factory.interface';
 import { AuthTokenInterface } from '../../auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
+import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refresh-token-factory.interface';
+import { AuthTokenFactoryInterface } from '../../auth-token/factory/auth-token-factory.interface';
 
 @Injectable()
 export class LoginByWalletUseCase {
@@ -26,18 +29,24 @@ export class LoginByWalletUseCase {
     private readonly usersServiceClient: UsersServiceClient,
     @Inject(WALLETS_SERVICE_NAME)
     private readonly walletsServiceClient: WalletsServiceClient,
-    @Inject(JwtPayloadFactoryInterface)
-    private readonly jwtPayloadFactory: JwtPayloadFactoryInterface,
     @Inject(SessionFactoryInterface)
     private readonly sessionFactory: SessionFactoryInterface,
     @Inject(SessionRepositoryInterface)
     private readonly sessionRepository: SessionRepositoryInterface,
+    @Inject(TokenRepositoryInterface)
+    private readonly tokenRepository: TokenRepositoryInterface,
     @Inject(TokenFactoryInterface)
     private readonly tokenFactory: TokenFactoryInterface,
+    @Inject(LoginResponseFactoryInterface)
+    private readonly loginResponseFactory: LoginResponseFactoryInterface,
     @Inject(AuthTokenInterface)
     private readonly authTokenService: AuthTokenInterface,
     @Inject(RefreshTokenInterface)
     private readonly refreshTokenService: RefreshTokenInterface,
+    @Inject(RefreshTokenFactoryInterface)
+    private readonly refreshTokenFactoryService: RefreshTokenFactoryInterface,
+    @Inject(AuthTokenFactoryInterface)
+    private readonly authTokenFactoryService: AuthTokenFactoryInterface,
   ) {}
 
   async execute(
@@ -61,17 +70,19 @@ export class LoginByWalletUseCase {
 
     const session = this.sessionFactory.createSession(userData.data!.id);
     const token = this.tokenFactory.createToken(session.id);
-    session.tokens = [token];
-
     await this.sessionRepository.insert(session);
-    const payload = this.jwtPayloadFactory.createJwtPayload(
+    await this.tokenRepository.insert(token);
+    const authPayload = this.authTokenFactoryService.createPayload(
       userData.data!,
       session.id,
       token.id,
     );
-    const authJwt = this.authTokenService.sign(payload);
-    const refreshJwt = this.refreshTokenService.sign(payload);
+    const refreshPayload = this.refreshTokenFactoryService.createPayload(
+      token.id,
+    );
+    const authJwt = this.authTokenService.sign(authPayload);
+    const refreshJwt = this.refreshTokenService.sign(refreshPayload);
 
-    return new SuccessResponse(new LoginResponseDataDto(authJwt, refreshJwt));
+    return this.loginResponseFactory.createLoginResponse(authJwt, refreshJwt);
   }
 }

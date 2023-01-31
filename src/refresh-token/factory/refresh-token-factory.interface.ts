@@ -1,5 +1,7 @@
+import { RefreshTokenPayloadDataDto } from '../dtos/refresh-token-payload-data.dto';
+
 export interface RefreshTokenFactoryInterface {
-  createToken(tokenId: string): string;
+  createPayload(tokenId: string): RefreshTokenPayloadDataDto;
 }
 
 export const RefreshTokenFactoryInterface = Symbol('RefreshTokenFactory');
