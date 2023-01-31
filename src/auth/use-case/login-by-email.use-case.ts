@@ -71,9 +71,8 @@ export class LoginByEmailUseCase {
     const refreshPayload = this.refreshTokenFactoryService.createPayload(
       token.id,
     );
-    const authJwt = this.authTokenFactoryService.createToken(authPayload);
-    const refreshJwt =
-      this.refreshTokenFactoryService.createToken(refreshPayload);
+    const authJwt = this.authTokenService.sign(authPayload);
+    const refreshJwt = this.refreshTokenService.sign(refreshPayload);
 
     return this.loginResponseFactory.createLoginResponse(authJwt, refreshJwt);
   }
