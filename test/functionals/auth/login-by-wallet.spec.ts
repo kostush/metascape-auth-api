@@ -19,6 +19,11 @@ import { AuthTokenService } from '../../../src/auth-token/services/auth-token.se
 import { RefreshTokenService } from '../../../src/refresh-token/services/refresh-token.service';
 import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
+import { DataSource } from 'typeorm';
+import { SessionModel } from '../../../src/auth/models/session.model';
+import { TokenModel } from '../../../src/auth/models/token.model';
+import { TokenRepositoryInterface } from '../../../src/auth/repositories/token-repository.interface';
+import { SessionRepositoryInterface } from '../../../src/auth/repositories/session-repository.interface';
 
 describe('Login by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -28,6 +33,10 @@ describe('Login by wallet functional tests', () => {
   let userService: GrpcMockServer;
   let authTokenService: AuthTokenService;
   let refreshTokenService: RefreshTokenService;
+  let dataSource: DataSource;
+  let tokenRepository: TokenRepositoryInterface;
+  let sessionRepository: SessionRepositoryInterface;
+
   const walletMockResponse: WalletResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
@@ -66,6 +75,9 @@ describe('Login by wallet functional tests', () => {
     app = await createMockAppHelper();
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
+    dataSource = app.get(DataSource);
+    tokenRepository = app.get(TokenRepositoryInterface);
+    sessionRepository = app.get(SessionRepositoryInterface);
     await app.listen();
 
     // create gRPC client
@@ -115,6 +127,8 @@ describe('Login by wallet functional tests', () => {
   });
 
   it('should fail due to validation of businessId', async () => {
+    await dataSource.getRepository(SessionModel).delete({});
+    await dataSource.getRepository(TokenModel).delete({});
     expect.hasAssertions();
     try {
       await lastValueFrom(
@@ -134,6 +148,8 @@ describe('Login by wallet functional tests', () => {
   });
 
   it('should fail due to validation of address', async () => {
+    await dataSource.getRepository(SessionModel).delete({});
+    await dataSource.getRepository(TokenModel).delete({});
     expect.hasAssertions();
     try {
       await lastValueFrom(
@@ -193,6 +209,8 @@ describe('Login by wallet functional tests', () => {
   });
 
   it('should login user successfully', async () => {
+    await dataSource.getRepository(SessionModel).delete({});
+    await dataSource.getRepository(TokenModel).delete({});
     const res = await lastValueFrom(
       client.loginByWallet({
         businessId: walletMockResponse.data!.businessId,
@@ -207,6 +225,14 @@ describe('Login by wallet functional tests', () => {
     const refreshJwtPayload = refreshTokenService.verify(
       res?.data?.refreshToken as string,
     );
+    const sessionFromRepoAfterLogin = await sessionRepository.getOneById(
+      authJwtPayload.sessionId,
+      true,
+    );
+    const tokenFromRepoAfterLogin = await tokenRepository.getOneById(
+      authJwtPayload.tokenId,
+      true,
+    );
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
     expect(authJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
@@ -214,5 +240,12 @@ describe('Login by wallet functional tests', () => {
     expect(authJwtPayload.sessionId).toBeDefined();
     expect(authJwtPayload.tokenId).toBeDefined();
     expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
+    expect(sessionFromRepoAfterLogin).toBeDefined();
+    expect(sessionFromRepoAfterLogin.isClosed).toBe(false);
+    expect(sessionFromRepoAfterLogin.id).toEqual(
+      tokenFromRepoAfterLogin.sessionId,
+    );
+    expect(tokenFromRepoAfterLogin).toBeDefined();
+    expect(tokenFromRepoAfterLogin.isClosed).toBe(false);
   });
 });

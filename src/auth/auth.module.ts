@@ -39,6 +39,8 @@ import { TokenRepository } from './repositories/token-repository.service';
 import { RefreshUseCase } from './use-case/refresh.use-case';
 import { LoginResponseFactoryInterface } from './factory/login-response-factory.interface';
 import { LoginResponseFactoryService } from './factory/login-response-factory.service';
+import { CloseSessionUseCase } from './use-case/close-session.use-case';
+import { CloseSessionController } from './controllers/close-session.controller';
 
 @Module({
   controllers: [
@@ -48,6 +50,7 @@ import { LoginResponseFactoryService } from './factory/login-response-factory.se
     LoginByEmailController,
     ValidateController,
     RefreshController,
+    CloseSessionController,
   ],
   providers: [
     {
@@ -95,6 +98,7 @@ import { LoginResponseFactoryService } from './factory/login-response-factory.se
     LoginByEmailUseCase,
     ValidateUseCase,
     RefreshUseCase,
+    CloseSessionUseCase,
   ],
   imports: [
     ParamsModule,

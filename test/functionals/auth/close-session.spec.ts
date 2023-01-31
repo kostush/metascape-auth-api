@@ -1,4 +1,8 @@
-import { BadRequestException, INestMicroservice } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  INestMicroservice,
+} from '@nestjs/common';
 import { ClientGrpcProxy } from '@nestjs/microservices';
 import {
   AUTH_SERVICE_NAME,
@@ -24,14 +28,12 @@ import {
 import { TokenRepositoryInterface } from '../../../src/auth/repositories/token-repository.interface';
 import { SessionRepositoryInterface } from '../../../src/auth/repositories/session-repository.interface';
 import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
-import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
-import { TokenIsClosedException } from '../../../src/auth/exceptions/token-is-closed.exception';
-import { SessionIsClosedException } from '../../../src/auth/exceptions/session-is-closed.exception';
 import { DataSource } from 'typeorm';
 import { SessionModel } from '../../../src/auth/models/session.model';
 import { TokenModel } from '../../../src/auth/models/token.model';
+import { SessionNotFoundException } from '../../../src/auth/exceptions/session-not-found.exception';
 
-describe('Refresh functional tests', () => {
+describe('Close session functional tests', () => {
   let app: INestMicroservice;
   let client: AuthServiceClient;
   let clientProxy: ClientGrpcProxy;
@@ -39,7 +41,6 @@ describe('Refresh functional tests', () => {
   let userService: GrpcMockServer;
   let tokenRepository: TokenRepositoryInterface;
   let sessionRepository: SessionRepositoryInterface;
-  let refreshTokenService: RefreshTokenInterface;
   let authTokenService: AuthTokenInterface;
   let dataSource: DataSource;
 
@@ -79,7 +80,6 @@ describe('Refresh functional tests', () => {
     // run gRPC server
     app = await createMockAppHelper();
     authTokenService = app.get(AuthTokenInterface);
-    refreshTokenService = app.get(RefreshTokenInterface);
     tokenRepository = app.get(TokenRepositoryInterface);
     sessionRepository = app.get(SessionRepositoryInterface);
     dataSource = app.get(DataSource);
@@ -141,12 +141,12 @@ describe('Refresh functional tests', () => {
     await userService.stop();
   });
 
-  it('should fail due to validation of wrong refreshToken', async () => {
+  it('should fail due to validation of wrong sessionId', async () => {
     expect.hasAssertions();
     try {
       await lastValueFrom(
-        client.refresh({
-          refreshToken: 'wrong token',
+        client.closeSession({
+          sessionId: 'wrong session id',
         }),
       );
     } catch (e) {
@@ -155,14 +155,12 @@ describe('Refresh functional tests', () => {
       expect(grpcException.message).toBe(BadRequestException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain(
-        'refreshToken must be a jwt string',
+        'sessionId must be a UUID',
       );
     }
   });
 
-  it('should fail due to token is closed', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
-    await dataSource.getRepository(TokenModel).delete({});
+  it('should fail due to session does not exist', async () => {
     const res = await lastValueFrom(
       client.loginByEmail({
         businessId: userMockResponse.data?.businessId as string,
@@ -170,27 +168,54 @@ describe('Refresh functional tests', () => {
         password: mockUserPassword as string,
       }),
     );
-    const refreshTokenDto = refreshTokenService.verify(res.data!.refreshToken);
-    const token = await tokenRepository.getOneById(refreshTokenDto.tokenId);
-    token.isClosed = true;
-    await tokenRepository.update(token);
+    const authTokenDto = authTokenService.verify(res.data!.authToken);
+    const session = await sessionRepository.getOneById(authTokenDto.sessionId);
+    await sessionRepository.delete(session);
     try {
       await lastValueFrom(
-        client.refresh({
-          refreshToken: res?.data?.refreshToken as string,
+        client.closeSession({
+          sessionId: session.id,
         }),
       );
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
-      expect(grpcException.message).toBe(TokenIsClosedException.name);
+      expect(grpcException.message).toBe(SessionNotFoundException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain(
-        `Token ${token.id} is closed`,
+        `session is not found by id "${session.id}`,
       );
     }
   });
 
   it('should fail due to session is closed', async () => {
+    const res = await lastValueFrom(
+      client.loginByEmail({
+        businessId: userMockResponse.data?.businessId as string,
+        email: userMockResponse.data?.email as string,
+        password: mockUserPassword as string,
+      }),
+    );
+    const authTokenDto = authTokenService.verify(res.data!.authToken);
+    const session = await sessionRepository.getOneById(authTokenDto.sessionId);
+    session.isClosed = true;
+    await sessionRepository.update(session);
+    try {
+      await lastValueFrom(
+        client.closeSession({
+          sessionId: session.id,
+        }),
+      );
+    } catch (e) {
+      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
+      expect(grpcException.message).toBe(ConflictException.name);
+      expect(grpcException.getErrors()).toBeInstanceOf(Array);
+      expect(grpcException.getErrors()[0]).toContain(
+        `session ${session.id} is olready closed`,
+      );
+    }
+  });
+
+  it('should close session succesfully', async () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});
     const res = await lastValueFrom(
@@ -200,31 +225,30 @@ describe('Refresh functional tests', () => {
         password: mockUserPassword as string,
       }),
     );
-    const refreshTokenDto = refreshTokenService.verify(res.data!.refreshToken);
-    const token = await tokenRepository.getOneById(
-      refreshTokenDto.tokenId,
-      true,
-    );
-    const session = token.session!;
-    session.isClosed = true;
-    await sessionRepository.update(session);
+    const authTokenDto = authTokenService.verify(res.data!.authToken);
     try {
       await lastValueFrom(
-        client.refresh({
-          refreshToken: res?.data?.refreshToken as string,
+        client.closeSession({
+          sessionId: authTokenDto.sessionId,
         }),
       );
     } catch (e) {
-      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
-      expect(grpcException.message).toBe(SessionIsClosedException.name);
-      expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors()[0]).toContain(
-        `Session ${session.id} is closed`,
-      );
+      expect(e).toBeUndefined();
     }
+
+    const sessionFromRepo = await sessionRepository.getOneById(
+      authTokenDto.sessionId,
+    );
+    const tokenFromRepo = await tokenRepository.getOneById(
+      authTokenDto.tokenId,
+    );
+    expect(sessionFromRepo).toBeDefined();
+    expect(tokenFromRepo).toBeDefined();
+    expect(sessionFromRepo.isClosed).toBe(true);
+    expect(tokenFromRepo.isClosed).toBe(true);
   });
 
-  it('should refresh succesfully', async () => {
+  it('should close session and related tokens succesfully after refresh', async () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});
     const resultAfterLogin = await lastValueFrom(
@@ -234,48 +258,38 @@ describe('Refresh functional tests', () => {
         password: mockUserPassword as string,
       }),
     );
-    const refreshResult = await lastValueFrom(
+    const authTokenPayload = authTokenService.verify(
+      resultAfterLogin.data!.authToken,
+    );
+    const resultAfterRefresh = await lastValueFrom(
       client.refresh({
-        refreshToken: resultAfterLogin?.data?.refreshToken as string,
+        refreshToken: resultAfterLogin.data!.refreshToken,
+      }),
+    );
+    await lastValueFrom(
+      client.closeSession({
+        sessionId: authTokenPayload.sessionId,
       }),
     );
 
-    const authTokenAfterLoginPayload = authTokenService.verify(
-      resultAfterLogin.data!.authToken,
+    const sessionFromRepo = await sessionRepository.getOneById(
+      authTokenPayload.sessionId,
     );
-    const authTokenAfterRefreshPayload = authTokenService.verify(
-      refreshResult.data!.authToken,
+    const tokenFromRepoAfterAuth = await tokenRepository.getOneById(
+      authTokenPayload.tokenId,
     );
-    const refreshTokenAfterRefreshPayload = refreshTokenService.verify(
-      refreshResult.data!.refreshToken,
-    );
-    const sessionFromRepoAfterLogin = await sessionRepository.getOneById(
-      authTokenAfterLoginPayload.sessionId,
-    );
-    const tokenFromRepoAfterLogin = await tokenRepository.getOneById(
-      authTokenAfterLoginPayload.tokenId,
-    );
-    const sessionFromRepoAfterRefresh = await sessionRepository.getOneById(
-      authTokenAfterRefreshPayload.sessionId,
+    const authTokenPayloadAfterRefresh = authTokenService.verify(
+      resultAfterRefresh.data!.authToken,
     );
     const tokenFromRepoAfterRefresh = await tokenRepository.getOneById(
-      authTokenAfterRefreshPayload.tokenId,
+      authTokenPayloadAfterRefresh.tokenId,
     );
 
-    expect(refreshResult.data?.authToken).toBeDefined();
-    expect(refreshResult.data?.refreshToken).toBeDefined();
-    expect(authTokenAfterRefreshPayload.id).toBe(userMockResponse.data!.id);
-    expect(authTokenAfterRefreshPayload.businessId).toBe(
-      userMockResponse.data!.businessId,
-    );
-    expect(authTokenAfterRefreshPayload.sessionId).toBeDefined();
-    expect(authTokenAfterRefreshPayload.tokenId).toBeDefined();
-    expect(refreshTokenAfterRefreshPayload.tokenId).toBeDefined();
-    expect(sessionFromRepoAfterRefresh).toBeDefined();
-    expect(sessionFromRepoAfterRefresh.isClosed).toBe(false);
-    expect(sessionFromRepoAfterRefresh.id).toBe(sessionFromRepoAfterLogin.id);
+    expect(sessionFromRepo).toBeDefined();
+    expect(tokenFromRepoAfterAuth).toBeDefined();
     expect(tokenFromRepoAfterRefresh).toBeDefined();
-    expect(tokenFromRepoAfterLogin.isClosed).toBe(true);
-    expect(tokenFromRepoAfterRefresh.isClosed).toBe(false);
+    expect(sessionFromRepo.isClosed).toBe(true);
+    expect(tokenFromRepoAfterAuth.isClosed).toBe(true);
+    expect(tokenFromRepoAfterRefresh.isClosed).toBe(true);
   });
 });
