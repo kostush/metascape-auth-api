@@ -1,6 +1,6 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException } from '@nestjs/common';
 
-export class SessionIsClosedException extends NotFoundException {
+export class SessionIsClosedException extends ConflictException {
   constructor(message: string) {
     super(message);
   }

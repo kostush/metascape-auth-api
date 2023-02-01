@@ -1,7 +1,8 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
 import { CloseSessionRequest } from '../requests/close-session.request';
 import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
+import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
 
 @Injectable()
 export class CloseSessionUseCase {
@@ -18,13 +19,11 @@ export class CloseSessionUseCase {
       true,
     );
     if (session.isClosed) {
-      throw new ConflictException(`session ${session.id} is olready closed`);
+      throw new SessionIsClosedException(
+        `session ${session.id} is olready closed`,
+      );
     }
     session.isClosed = true;
-    session.tokens?.map((token) => {
-      token.isClosed = true;
-      return token;
-    });
     await this.sessionRepository.update(session);
   }
 }

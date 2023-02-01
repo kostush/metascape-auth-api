@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  INestMicroservice,
-} from '@nestjs/common';
+import { BadRequestException, INestMicroservice } from '@nestjs/common';
 import { ClientGrpcProxy } from '@nestjs/microservices';
 import {
   AUTH_SERVICE_NAME,
@@ -25,13 +21,11 @@ import {
   GetUserByEmailAndPasswordRequest,
   GetUserByIdRequest,
 } from 'metascape-user-api-client';
-import { TokenRepositoryInterface } from '../../../src/auth/repositories/token-repository.interface';
-import { SessionRepositoryInterface } from '../../../src/auth/repositories/session-repository.interface';
-import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
 import { DataSource } from 'typeorm';
 import { SessionModel } from '../../../src/auth/models/session.model';
 import { TokenModel } from '../../../src/auth/models/token.model';
 import { SessionNotFoundException } from '../../../src/auth/exceptions/session-not-found.exception';
+import { SessionIsClosedException } from '../../../src/auth/exceptions/session-is-closed.exception';
 
 describe('Close session functional tests', () => {
   let app: INestMicroservice;
@@ -39,9 +33,6 @@ describe('Close session functional tests', () => {
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let tokenRepository: TokenRepositoryInterface;
-  let sessionRepository: SessionRepositoryInterface;
-  let authTokenService: AuthTokenInterface;
   let dataSource: DataSource;
 
   const mockUserPassword = 'password';
@@ -75,13 +66,25 @@ describe('Close session functional tests', () => {
       },
     ],
   };
+  const sessionId = 'c04e3560-930d-4ad2-8c53-f60b7746b81e';
+  const mockSession: SessionModel = {
+    id: sessionId,
+    userId: 'cbf40ca2-edee-4a5b-9c05-026134dd70d8',
+    isClosed: false,
+    createdAt: 1661180246,
+    updatedAt: 1661180246,
+  };
+  const mockToken: TokenModel = {
+    id: '24a796d0-1998-4cff-b82c-fbee03169696',
+    sessionId: sessionId,
+    isClosed: false,
+    createdAt: 1661180246,
+    updatedAt: 1661180246,
+  };
 
   beforeAll(async () => {
     // run gRPC server
     app = await createMockAppHelper();
-    authTokenService = app.get(AuthTokenInterface);
-    tokenRepository = app.get(TokenRepositoryInterface);
-    sessionRepository = app.get(SessionRepositoryInterface);
     dataSource = app.get(DataSource);
     await app.listen();
 
@@ -135,10 +138,18 @@ describe('Close session functional tests', () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await clientProxy.close();
-    await walletService.stop();
-    await userService.stop();
+    if (app) {
+      await app.close();
+    }
+    if (clientProxy) {
+      await clientProxy.close();
+    }
+    if (walletService) {
+      await walletService.stop();
+    }
+    if (userService) {
+      await userService.stop();
+    }
   });
 
   it('should fail due to validation of wrong sessionId', async () => {
@@ -161,20 +172,11 @@ describe('Close session functional tests', () => {
   });
 
   it('should fail due to session does not exist', async () => {
-    const res = await lastValueFrom(
-      client.loginByEmail({
-        businessId: userMockResponse.data?.businessId as string,
-        email: userMockResponse.data?.email as string,
-        password: mockUserPassword as string,
-      }),
-    );
-    const authTokenDto = authTokenService.verify(res.data!.authToken);
-    const session = await sessionRepository.getOneById(authTokenDto.sessionId);
-    await sessionRepository.delete(session);
+    await dataSource.getRepository(SessionModel).delete({});
     try {
       await lastValueFrom(
         client.closeSession({
-          sessionId: session.id,
+          sessionId: mockSession.id,
         }),
       );
     } catch (e) {
@@ -182,35 +184,27 @@ describe('Close session functional tests', () => {
       expect(grpcException.message).toBe(SessionNotFoundException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain(
-        `session is not found by id "${session.id}`,
+        `session is not found by id "${mockSession.id}`,
       );
     }
   });
 
   it('should fail due to session is closed', async () => {
-    const res = await lastValueFrom(
-      client.loginByEmail({
-        businessId: userMockResponse.data?.businessId as string,
-        email: userMockResponse.data?.email as string,
-        password: mockUserPassword as string,
-      }),
-    );
-    const authTokenDto = authTokenService.verify(res.data!.authToken);
-    const session = await sessionRepository.getOneById(authTokenDto.sessionId);
-    session.isClosed = true;
-    await sessionRepository.update(session);
+    await dataSource.getRepository(SessionModel).delete({});
+    mockSession.isClosed = true;
+    await dataSource.getRepository(SessionModel).insert(mockSession);
     try {
       await lastValueFrom(
         client.closeSession({
-          sessionId: session.id,
+          sessionId: mockSession.id,
         }),
       );
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
-      expect(grpcException.message).toBe(ConflictException.name);
+      expect(grpcException.message).toBe(SessionIsClosedException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
       expect(grpcException.getErrors()[0]).toContain(
-        `session ${session.id} is olready closed`,
+        `session ${mockSession.id} is olready closed`,
       );
     }
   });
@@ -218,78 +212,18 @@ describe('Close session functional tests', () => {
   it('should close session succesfully', async () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});
-    const res = await lastValueFrom(
-      client.loginByEmail({
-        businessId: userMockResponse.data?.businessId as string,
-        email: userMockResponse.data?.email as string,
-        password: mockUserPassword as string,
-      }),
-    );
-    const authTokenDto = authTokenService.verify(res.data!.authToken);
-    try {
-      await lastValueFrom(
-        client.closeSession({
-          sessionId: authTokenDto.sessionId,
-        }),
-      );
-    } catch (e) {
-      expect(e).toBeUndefined();
-    }
-
-    const sessionFromRepo = await sessionRepository.getOneById(
-      authTokenDto.sessionId,
-    );
-    const tokenFromRepo = await tokenRepository.getOneById(
-      authTokenDto.tokenId,
-    );
-    expect(sessionFromRepo).toBeDefined();
-    expect(tokenFromRepo).toBeDefined();
-    expect(sessionFromRepo.isClosed).toBe(true);
-    expect(tokenFromRepo.isClosed).toBe(true);
-  });
-
-  it('should close session and related tokens succesfully after refresh', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
-    await dataSource.getRepository(TokenModel).delete({});
-    const resultAfterLogin = await lastValueFrom(
-      client.loginByEmail({
-        businessId: userMockResponse.data?.businessId as string,
-        email: userMockResponse.data?.email as string,
-        password: mockUserPassword as string,
-      }),
-    );
-    const authTokenPayload = authTokenService.verify(
-      resultAfterLogin.data!.authToken,
-    );
-    const resultAfterRefresh = await lastValueFrom(
-      client.refresh({
-        refreshToken: resultAfterLogin.data!.refreshToken,
-      }),
-    );
+    mockSession.isClosed = false;
+    await dataSource.getRepository(SessionModel).insert(mockSession);
+    await dataSource.getRepository(TokenModel).insert(mockToken);
     await lastValueFrom(
       client.closeSession({
-        sessionId: authTokenPayload.sessionId,
+        sessionId: mockSession.id,
       }),
     );
 
-    const sessionFromRepo = await sessionRepository.getOneById(
-      authTokenPayload.sessionId,
-    );
-    const tokenFromRepoAfterAuth = await tokenRepository.getOneById(
-      authTokenPayload.tokenId,
-    );
-    const authTokenPayloadAfterRefresh = authTokenService.verify(
-      resultAfterRefresh.data!.authToken,
-    );
-    const tokenFromRepoAfterRefresh = await tokenRepository.getOneById(
-      authTokenPayloadAfterRefresh.tokenId,
-    );
-
-    expect(sessionFromRepo).toBeDefined();
-    expect(tokenFromRepoAfterAuth).toBeDefined();
-    expect(tokenFromRepoAfterRefresh).toBeDefined();
-    expect(sessionFromRepo.isClosed).toBe(true);
-    expect(tokenFromRepoAfterAuth.isClosed).toBe(true);
-    expect(tokenFromRepoAfterRefresh.isClosed).toBe(true);
+    const sessionFromRepo = await dataSource
+      .getRepository(SessionModel)
+      .findOneBy({ id: mockSession.id });
+    expect(sessionFromRepo!.isClosed).toBe(true);
   });
 });

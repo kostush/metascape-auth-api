@@ -51,7 +51,7 @@ export class RefreshUseCase {
     try {
       refreshTokenDto = this.refreshTokenService.verify(request.refreshToken);
     } catch (e) {
-      throw new BadRequestException('Refresh token is not valid');
+      throw new BadRequestException('Refresh token is expiried');
     }
 
     const oldToken = await this.tokenRepository.getOneById(

@@ -2,7 +2,7 @@ import { CloseSessionRequest as ICloseSessionRequest } from '../auth.pb';
 import { IsUUID } from 'class-validator';
 
 export class CloseSessionRequest implements ICloseSessionRequest {
-  @IsUUID()
+  @IsUUID(4)
   readonly sessionId: string;
 
   constructor(sessionId: string) {

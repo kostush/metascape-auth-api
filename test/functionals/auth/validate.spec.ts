@@ -108,10 +108,18 @@ describe('Validate functional tests', () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await clientProxy.close();
-    await walletService.stop();
-    await userService.stop();
+    if (app) {
+      await app.close();
+    }
+    if (clientProxy) {
+      await clientProxy.close();
+    }
+    if (walletService) {
+      await walletService.stop();
+    }
+    if (userService) {
+      await userService.stop();
+    }
   });
 
   it('should fail due to validation of wrong authToken', async () => {
