@@ -14,17 +14,23 @@ definitions:
         script:
           - npm install
           - npm run lint
+        caches:
+          - node
     - step: &Build-step
         name: Run build
         script:
           - npm install
           - npm run build
+        caches:
+          - node
     - step: &Test-step
         name: Run tests
         script:
           - npm install
           - npm run migration:run:test
           - npm run test
+        caches:
+          - node
         services:
           - postgres
     - step: &Dev-deploy-step
