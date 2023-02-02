@@ -51,7 +51,7 @@ export class RefreshUseCase {
     try {
       refreshTokenDto = this.refreshTokenService.verify(request.refreshToken);
     } catch (e) {
-      throw new BadRequestException('Refresh token is not valid or expired');
+      throw new BadRequestException('Refresh token is expiried');
     }
 
     const oldToken = await this.tokenRepository.getOneById(
@@ -71,15 +71,14 @@ export class RefreshUseCase {
         `Token ${refreshTokenDto.tokenId} is closed`,
       );
     }
-    oldToken.isClosed = true;
-
     const userData = await lastValueFrom(
       this.usersServiceClient.getUserById({
         id: oldToken.session!.userId,
       }),
     );
-    const token = this.tokenFactory.createToken(oldToken.sessionId);
+    oldToken.isClosed = true;
     await this.tokenRepository.update(oldToken);
+    const token = this.tokenFactory.createToken(oldToken.sessionId);
     await this.tokenRepository.insert(token);
     const authPayload = this.authTokenFactoryService.createPayload(
       userData.data!,

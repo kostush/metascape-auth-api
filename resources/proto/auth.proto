@@ -9,6 +9,7 @@ service AuthService {
   rpc LoginByEmail (LoginByEmailRequest) returns (LoginResponse) {}
   rpc Validate (ValidateRequest) returns (ValidateResponse) {}
   rpc Refresh (RefreshRequest) returns (LoginResponse){}
+  rpc CloseSession (CloseSessionRequest) returns (CloseSessionResponse) {}
 }
 
 // RegisterByEmail
@@ -89,4 +90,9 @@ message ValidateResponse {
 message RefreshRequest {
   string refreshToken = 1;
 }
+//CloseSession
+message CloseSessionRequest {
+  string sessionId = 1;
+}
+message CloseSessionResponse {}
 

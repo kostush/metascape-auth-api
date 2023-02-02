@@ -22,6 +22,9 @@ import {
 } from 'metascape-user-api-client';
 import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
+import { DataSource } from 'typeorm';
+import { SessionModel } from '../../../src/auth/models/session.model';
+import { TokenModel } from '../../../src/auth/models/token.model';
 
 describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -31,6 +34,7 @@ describe('Register by wallet functional tests', () => {
   let userService: GrpcMockServer;
   let authTokenService: AuthTokenInterface;
   let refreshTokenService: RefreshTokenInterface;
+  let dataSource: DataSource;
 
   const mockUserPassword = 'password';
 
@@ -70,6 +74,7 @@ describe('Register by wallet functional tests', () => {
     app = await createMockAppHelper();
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
+    dataSource = app.get(DataSource);
     await app.listen();
 
     // create gRPC client
@@ -112,10 +117,18 @@ describe('Register by wallet functional tests', () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await clientProxy.close();
-    await walletService.stop();
-    await userService.stop();
+    if (app) {
+      await app.close();
+    }
+    if (clientProxy) {
+      await clientProxy.close();
+    }
+    if (walletService) {
+      await walletService.stop();
+    }
+    if (userService) {
+      await userService.stop();
+    }
   });
 
   it('should fail due to validation of businessId', async () => {
@@ -176,6 +189,8 @@ describe('Register by wallet functional tests', () => {
   });
 
   it('should login user successfully', async () => {
+    await dataSource.getRepository(SessionModel).delete({});
+    await dataSource.getRepository(TokenModel).delete({});
     const res = await lastValueFrom(
       client.loginByEmail({
         businessId: userMockResponse.data?.businessId as string,
@@ -189,6 +204,14 @@ describe('Register by wallet functional tests', () => {
     const refreshJwtPayload = refreshTokenService.verify(
       res?.data?.refreshToken as string,
     );
+
+    const sessionFromRepoAfterLogin = await dataSource
+      .getRepository(SessionModel)
+      .findOneBy({ id: authJwtPayload.sessionId });
+    const tokenFromRepoAfterLogin = await dataSource
+      .getRepository(TokenModel)
+      .findOneBy({ id: authJwtPayload.tokenId });
+
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
     expect(authJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
@@ -196,5 +219,12 @@ describe('Register by wallet functional tests', () => {
     expect(authJwtPayload.sessionId).toBeDefined();
     expect(authJwtPayload.tokenId).toBeDefined();
     expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
+    expect(sessionFromRepoAfterLogin).toBeDefined();
+    expect(sessionFromRepoAfterLogin!.isClosed).toBe(false);
+    expect(sessionFromRepoAfterLogin!.id).toEqual(
+      tokenFromRepoAfterLogin!.sessionId,
+    );
+    expect(tokenFromRepoAfterLogin).toBeDefined();
+    expect(tokenFromRepoAfterLogin!.isClosed).toBe(false);
   });
 });
