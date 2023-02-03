@@ -11,9 +11,7 @@ export interface SessionRepositoryInterface {
 
   getOneByTokenId(tokenId: string): Promise<SessionModel>;
 
-  insert(session: SessionModel): Promise<void>;
-
-  update(session: SessionModel): Promise<void>;
+  save(session: SessionModel): Promise<void>;
 
   delete(session: SessionModel): Promise<void>;
 }

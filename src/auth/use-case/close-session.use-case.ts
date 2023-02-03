@@ -24,6 +24,6 @@ export class CloseSessionUseCase {
       );
     }
     session.isClosed = true;
-    await this.sessionRepository.update(session);
+    await this.sessionRepository.save(session);
   }
 }

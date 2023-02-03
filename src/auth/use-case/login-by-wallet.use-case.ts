@@ -70,8 +70,8 @@ export class LoginByWalletUseCase {
 
     const session = this.sessionFactory.createSession(userData.data!.id);
     const token = this.tokenFactory.createToken(session.id);
-    await this.sessionRepository.insert(session);
-    await this.tokenRepository.insert(token);
+    await this.sessionRepository.save(session);
+    await this.tokenRepository.save(token);
     const authPayload = this.authTokenFactoryService.createPayload(
       userData.data!,
       session.id,
