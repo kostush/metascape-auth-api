@@ -5,9 +5,7 @@ export interface TokenRepositoryInterface {
 
   getOneById(id: string, withRelation?: boolean): Promise<TokenModel>;
 
-  insert(token: TokenModel): Promise<void>;
-
-  update(token: TokenModel): Promise<void>;
+  save(token: TokenModel): Promise<void>;
 
   delete(token: TokenModel): Promise<void>;
 }

@@ -66,7 +66,7 @@ export class RefreshUseCase {
     }
     if (oldToken.isClosed) {
       oldToken.session!.isClosed = true;
-      await this.sessionRepository.update(oldToken.session!);
+      await this.sessionRepository.save(oldToken.session!);
       throw new TokenIsClosedException(
         `Token ${refreshTokenDto.tokenId} is closed`,
       );
@@ -77,9 +77,9 @@ export class RefreshUseCase {
       }),
     );
     oldToken.isClosed = true;
-    await this.tokenRepository.update(oldToken);
+    await this.tokenRepository.save(oldToken);
     const token = this.tokenFactory.createToken(oldToken.sessionId);
-    await this.tokenRepository.insert(token);
+    await this.tokenRepository.save(token);
     const authPayload = this.authTokenFactoryService.createPayload(
       userData.data!,
       oldToken.sessionId,

@@ -32,13 +32,10 @@ export class TokenRepository implements TokenRepositoryInterface {
     return token;
   }
 
-  async insert(token: TokenModel): Promise<void> {
-    token.createdAt = this.dateTime.getCurrentUnixTimestamp();
-    token.updatedAt = this.dateTime.getCurrentUnixTimestamp();
-    await this.tokenRepository.insert(token);
-  }
-
-  async update(token: TokenModel): Promise<void> {
+  async save(token: TokenModel): Promise<void> {
+    if (!token.createdAt) {
+      token.createdAt = this.dateTime.getCurrentUnixTimestamp();
+    }
     token.updatedAt = this.dateTime.getCurrentUnixTimestamp();
     await this.tokenRepository.save(token);
   }
