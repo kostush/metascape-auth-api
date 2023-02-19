@@ -41,6 +41,7 @@ import { LoginResponseFactoryInterface } from './factory/login-response-factory.
 import { LoginResponseFactoryService } from './factory/login-response-factory.service';
 import { CloseSessionUseCase } from './use-case/close-session.use-case';
 import { CloseSessionController } from './controllers/close-session.controller';
+import { SessionClient } from 'metascape-session-client';
 
 @Module({
   controllers: [
@@ -90,6 +91,15 @@ import { CloseSessionController } from './controllers/close-session.controller';
     {
       provide: LoginResponseFactoryInterface,
       useClass: LoginResponseFactoryService,
+    },
+    {
+      provide: SessionClient,
+      useFactory: async (sessionRedisUrl: string) => {
+        const sessionClient = new SessionClient({ url: sessionRedisUrl });
+        await sessionClient.connect();
+        return sessionClient;
+      },
+      inject: [PARAMETERS.REDIS_URL],
     },
 
     RegisterByEmailUseCase,

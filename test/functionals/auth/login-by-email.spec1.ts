@@ -12,59 +12,64 @@ import { createMockWalletServiceHelper } from '../../helpers/create-mock-wallet-
 import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
 import { GrpcException, GrpcExceptionFactory } from 'metascape-common-api';
 import { GrpcMockServer } from '@alenon/grpc-mock-server';
-import { SignNonceRequest, WalletResponse } from 'metascape-wallet-api-client';
-import { GetUserByIdRequest, UserResponse } from 'metascape-user-api-client';
-import { WalletNotAttachedToUserException } from '../../../src/auth/exceptions/wallet-not-attached-to-user.exception';
-import { AuthTokenService } from '../../../src/auth-token/services/auth-token.service';
-import { RefreshTokenService } from '../../../src/refresh-token/services/refresh-token.service';
+import {
+  GetWalletsByUserIdRequest,
+  WalletsResponse,
+} from 'metascape-wallet-api-client';
+import {
+  UserResponse,
+  GetUserByEmailAndPasswordRequest,
+} from 'metascape-user-api-client';
 import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
 import { DataSource } from 'typeorm';
 import { SessionModel } from '../../../src/auth/models/session.model';
 import { TokenModel } from '../../../src/auth/models/token.model';
+import { SessionClient } from 'metascape-session-client';
 
-describe('Login by wallet functional tests', () => {
+describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
   let client: AuthServiceClient;
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let authTokenService: AuthTokenService;
-  let refreshTokenService: RefreshTokenService;
+  let authTokenService: AuthTokenInterface;
+  let refreshTokenService: RefreshTokenInterface;
   let dataSource: DataSource;
+  // let sessionRedisClient: SessionClient;
 
-  const walletMockResponse: WalletResponse = {
-    data: {
-      businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
-      id: 'c04e3560-930d-4ad2-8c53-f60b7746b81e',
-      address: '0x57D73c1896A339c866E6076e3c499F98840439C4',
-      nonce: 'cbf40ca2-edee-4a5b-9c05-026134dd70d8',
-      userId: 'a2717a71-8769-469c-9e3f-5f29557b73aa',
-      createdAt: 1661180246,
-      updatedAt: 1661180246,
-    },
-  };
+  const mockUserPassword = 'password';
 
-  const walletWithoutUserMockResponse: WalletResponse = {
-    data: {
-      businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
-      id: 'c04e3560-930d-4ad2-8c53-f60b7746b815',
-      address: '0x57D73c1896A339c866E6076e3c499F98840439C5',
-      nonce: 'cbf40ca2-edee-4a5b-9c05-026134dd70d8',
-      createdAt: 1661180246,
-      updatedAt: 1661180246,
-    },
-  };
-  const walletNotFoundAddress = '0x57D73c1896A339c866E6076e3c499F98840439C3';
   const userMockResponse: UserResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
       id: 'c04e3560-930d-4ad2-8c53-f60b7746b81e',
+      email: 'test@test.com',
+      nickname: 'nickname',
+      firstName: 'firstName',
+      lastName: 'lastName',
+      about: 'about',
+      createdBy: 'createdBy',
+      updatedBy: 'updatedBy',
       createdAt: 1661180246,
       updatedAt: 1661180246,
     },
   };
-  const mockWalletsNotFoundMessage = 'wallet not found';
+  const walletsMockResponse: WalletsResponse = {
+    data: [
+      {
+        businessId: userMockResponse?.data?.businessId as string,
+        id: 'c04e3560-930d-4ad2-8c53-f60b7746b81e',
+        address: '0x57D73c1896A339c866E6076e3c499F98840439C4',
+        nonce: 'cbf40ca2-edee-4a5b-9c05-026134dd70d8',
+        userId: userMockResponse?.data?.id,
+        createdAt: 1661180246,
+        updatedAt: 1661180246,
+        createdBy: 'createdBy',
+        updatedBy: 'updatedBy',
+      },
+    ],
+  };
 
   beforeAll(async () => {
     // run gRPC server
@@ -72,6 +77,7 @@ describe('Login by wallet functional tests', () => {
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
     dataSource = app.get(DataSource);
+    //  sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -80,34 +86,34 @@ describe('Login by wallet functional tests', () => {
 
     // create mock wallet gRPC server
     walletService = createMockWalletServiceHelper({
-      SignNonce: (
-        call: ServerUnaryCall<SignNonceRequest, WalletResponse>,
-        callback: sendUnaryData<WalletResponse>,
+      GetWalletsByUserId: (
+        call: ServerUnaryCall<GetWalletsByUserIdRequest, WalletsResponse>,
+        callback: sendUnaryData<WalletsResponse>,
       ) => {
         let error = null;
-        if (
-          call.request.address === walletWithoutUserMockResponse.data!.address
-        ) {
-          callback(null, walletWithoutUserMockResponse);
-          return;
+        if (call.request.userId !== walletsMockResponse.data[0].userId) {
+          error = new GrpcException(status.NOT_FOUND, 'WalletNotFound', []);
         }
-        if (call.request.address !== walletMockResponse.data!.address) {
-          error = new GrpcException(status.NOT_FOUND, 'WalletNotFound', [
-            mockWalletsNotFoundMessage,
-          ]);
-        }
-        callback(error, walletMockResponse);
+        callback(error, walletsMockResponse);
       },
     });
     await walletService.start();
 
     // create mock user gRPC server
     userService = createMockUserServiceHelper({
-      GetUserById: (
-        call: ServerUnaryCall<GetUserByIdRequest, UserResponse>,
+      GetUserByEmailAndPassword: (
+        call: ServerUnaryCall<GetUserByEmailAndPasswordRequest, UserResponse>,
         callback: sendUnaryData<UserResponse>,
       ) => {
-        callback(null, userMockResponse);
+        let error = null;
+        if (
+          call.request.email !== userMockResponse.data?.email ||
+          call.request.password !== mockUserPassword ||
+          call.request.businessId !== userMockResponse.data?.businessId
+        ) {
+          error = new GrpcException(status.NOT_FOUND, 'UserIsNotFound', []);
+        }
+        callback(error, userMockResponse);
       },
     });
     await userService.start();
@@ -126,18 +132,19 @@ describe('Login by wallet functional tests', () => {
     if (userService) {
       await userService.stop();
     }
+    // if (sessionRedisClient) {
+    //   await sessionRedisClient.disconnect();
+    // }
   });
 
   it('should fail due to validation of businessId', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
-    await dataSource.getRepository(TokenModel).delete({});
     expect.hasAssertions();
     try {
       await lastValueFrom(
-        client.loginByWallet({
-          businessId: 'test',
-          address: walletMockResponse.data!.address,
-          signature: 'signature',
+        client.loginByEmail({
+          businessId: 'wrong',
+          email: 'test@test.com',
+          password: 'password',
         }),
       );
     } catch (e) {
@@ -149,16 +156,14 @@ describe('Login by wallet functional tests', () => {
     }
   });
 
-  it('should fail due to validation of address', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
-    await dataSource.getRepository(TokenModel).delete({});
+  it('should fail due to validation of email', async () => {
     expect.hasAssertions();
     try {
       await lastValueFrom(
-        client.loginByWallet({
-          businessId: walletMockResponse.data?.businessId as string,
-          address: 'test',
-          signature: 'signature',
+        client.loginByEmail({
+          businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
+          email: 'wrong',
+          password: 'password',
         }),
       );
     } catch (e) {
@@ -166,47 +171,26 @@ describe('Login by wallet functional tests', () => {
       expect(grpcException.code).toBe(status.INVALID_ARGUMENT);
       expect(grpcException.message).toBe(BadRequestException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors()[0]).toContain('address');
+      expect(grpcException.getErrors()[0]).toContain('email');
     }
   });
 
-  it('should fail due to wallet not found error', async () => {
+  it('should fail due to user not found error', async () => {
     expect.hasAssertions();
     try {
       await lastValueFrom(
-        client.loginByWallet({
-          businessId: walletMockResponse.data!.businessId,
-          address: walletNotFoundAddress,
-          signature: 'signature',
+        client.loginByEmail({
+          businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
+          email: 'uknown@gmail.com',
+          password: 'password',
         }),
       );
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
       expect(grpcException.code).toBe(status.NOT_FOUND);
-      expect(grpcException.message).toBe('WalletNotFound');
+      expect(grpcException.message).toBe('UserIsNotFound');
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors()[0]).toBe(mockWalletsNotFoundMessage);
-    }
-  });
-
-  it('should fail due to wallet without userId', async () => {
-    expect.hasAssertions();
-    try {
-      await lastValueFrom(
-        client.loginByWallet({
-          businessId: walletWithoutUserMockResponse.data!.businessId,
-          address: walletWithoutUserMockResponse.data!.address,
-          signature: 'signature',
-        }),
-      );
-    } catch (e) {
-      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
-      expect(grpcException.code).toBe(status.ALREADY_EXISTS);
-      expect(grpcException.message).toBe(WalletNotAttachedToUserException.name);
-      expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors()[0]).toContain(
-        walletWithoutUserMockResponse.data!.address,
-      );
+      expect(grpcException.getErrors().length).toBe(0);
     }
   });
 
@@ -214,25 +198,28 @@ describe('Login by wallet functional tests', () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});
     const res = await lastValueFrom(
-      client.loginByWallet({
-        businessId: walletMockResponse.data!.businessId,
-        address: walletMockResponse.data!.address,
-        signature: 'signature',
+      client.loginByEmail({
+        businessId: userMockResponse.data?.businessId as string,
+        email: userMockResponse.data?.email as string,
+        password: mockUserPassword as string,
       }),
     );
-
     const authJwtPayload = authTokenService.verify(
       res?.data?.authToken as string,
     );
     const refreshJwtPayload = refreshTokenService.verify(
       res?.data?.refreshToken as string,
     );
+
     const sessionFromRepoAfterLogin = await dataSource
       .getRepository(SessionModel)
       .findOneBy({ id: authJwtPayload.sessionId });
     const tokenFromRepoAfterLogin = await dataSource
       .getRepository(TokenModel)
       .findOneBy({ id: authJwtPayload.tokenId });
+    // const sessionFromRedis = await sessionRedisClient.getSession(
+    //   authJwtPayload.sessionId,
+    // );
 
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
@@ -248,5 +235,6 @@ describe('Login by wallet functional tests', () => {
     );
     expect(tokenFromRepoAfterLogin).toBeDefined();
     expect(tokenFromRepoAfterLogin!.isClosed).toBe(false);
+    //  expect(sessionFromRedis?.tokenId).toBe(authJwtPayload.tokenId);
   });
 });

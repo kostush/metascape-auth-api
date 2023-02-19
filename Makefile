@@ -1,4 +1,4 @@
-DOCKER_COMPOSE_DEV ?= docker-compose -f docker-compose.dev.yml -f docker-compose.db.yml -f docker-compose.db-test.yml
+DOCKER_COMPOSE_DEV ?= docker-compose -f docker-compose.dev.yml -f docker-compose.db.yml -f docker-compose.db-test.yml -f docker-compose.redis.yml -f docker-compose.redis.test.yml
 DOCKER_COMPOSE_PROD ?= docker-compose -f docker-compose.yml  -f docker-compose.db.yml
 DOCKER_COMPOSE_PROTOC_GEN_DOC ?= docker-compose -f docker-compose.protoc-gen-doc.yml
 DOCKER_COMPOSE_SCHEMASPY ?= docker-compose -f docker-compose.schemaspy.yml
@@ -12,7 +12,7 @@ env: ## Create env file
 ## NPM
 ## -----------------
 ##
-npm-install: ## Update vendors
+npm-install: ## Update vendor
 	$(EXEC_SERVICE) npm install
 
 npm-migration-run: ## Run migration

@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  redis-auth:
+    container_name: redis-auth
+    image: bitnami/redis:latest
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_PASSWORD=admin
+      - REDIS_REPLICATION_MODE=master
