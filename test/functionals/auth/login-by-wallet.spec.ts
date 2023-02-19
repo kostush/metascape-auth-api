@@ -33,7 +33,7 @@ describe('Login by wallet functional tests', () => {
   let authTokenService: AuthTokenService;
   let refreshTokenService: RefreshTokenService;
   let dataSource: DataSource;
-  //let sessionRedisClient: SessionClient;
+  let sessionRedisClient: SessionClient;
 
   const walletMockResponse: WalletResponse = {
     data: {
@@ -74,7 +74,7 @@ describe('Login by wallet functional tests', () => {
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
     dataSource = app.get(DataSource);
-    // sessionRedisClient = app.get(SessionClient);
+    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -129,9 +129,9 @@ describe('Login by wallet functional tests', () => {
     if (userService) {
       await userService.stop();
     }
-    // if (sessionRedisClient) {
-    //   await sessionRedisClient.disconnect();
-    // }
+    if (sessionRedisClient) {
+      await sessionRedisClient.disconnect();
+    }
   });
 
   it('should fail due to validation of businessId', async () => {
@@ -239,9 +239,9 @@ describe('Login by wallet functional tests', () => {
     const tokenFromRepoAfterLogin = await dataSource
       .getRepository(TokenModel)
       .findOneBy({ id: authJwtPayload.tokenId });
-    // const sessionFromRedis = await sessionRedisClient.getSession(
-    //   authJwtPayload.sessionId,
-    // );
+    const sessionFromRedis = await sessionRedisClient.getSession(
+      authJwtPayload.sessionId,
+    );
 
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
@@ -257,6 +257,6 @@ describe('Login by wallet functional tests', () => {
     );
     expect(tokenFromRepoAfterLogin).toBeDefined();
     expect(tokenFromRepoAfterLogin!.isClosed).toBe(false);
-    // expect(sessionFromRedis?.tokenId).toBe(authJwtPayload.tokenId);
+    expect(sessionFromRedis?.tokenId).toBe(authJwtPayload.tokenId);
   });
 });

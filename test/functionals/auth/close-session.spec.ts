@@ -35,7 +35,7 @@ describe('Close session functional tests', () => {
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
   let dataSource: DataSource;
-  // let sessionRedisClient: SessionClient;
+  let sessionRedisClient: SessionClient;
 
   const mockUserPassword = 'password';
   const userMockResponse: UserResponse = {
@@ -88,7 +88,7 @@ describe('Close session functional tests', () => {
     // run gRPC server
     app = await createMockAppHelper();
     dataSource = app.get(DataSource);
-    //sessionRedisClient = app.get(SessionClient);
+    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -153,9 +153,9 @@ describe('Close session functional tests', () => {
     if (userService) {
       await userService.stop();
     }
-    // if (sessionRedisClient) {
-    //   await sessionRedisClient.disconnect();
-    // }
+    if (sessionRedisClient) {
+      await sessionRedisClient.disconnect();
+    }
   });
 
   it('should fail due to validation of wrong sessionId', async () => {
@@ -230,8 +230,8 @@ describe('Close session functional tests', () => {
     const sessionFromRepo = await dataSource
       .getRepository(SessionModel)
       .findOneBy({ id: mockSession.id });
-    //const tokenFromRedis = await sessionRedisClient.getSession(mockSession.id);
+    const tokenFromRedis = await sessionRedisClient.getSession(mockSession.id);
     expect(sessionFromRepo!.isClosed).toBe(true);
-    //expect(tokenFromRedis).toBeNull();
+    expect(tokenFromRedis).toBeNull();
   });
 });

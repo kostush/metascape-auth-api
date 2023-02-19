@@ -12,12 +12,14 @@ import { sendUnaryData, ServerUnaryCall, status } from '@grpc/grpc-js';
 import { GrpcException, GrpcExceptionFactory } from 'metascape-common-api';
 import { GrpcMockServer } from '@alenon/grpc-mock-server';
 import { CreateUserRequest, UserResponse } from 'metascape-user-api-client';
+import { SessionClient } from 'metascape-session-client';
 
 describe('Register by email functional tests', () => {
   let app: INestMicroservice;
   let client: AuthServiceClient;
   let clientProxy: ClientGrpcProxy;
   let userService: GrpcMockServer;
+  let sessionRedisClient: SessionClient;
   const userMockResponse: UserResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
@@ -31,6 +33,7 @@ describe('Register by email functional tests', () => {
   beforeAll(async () => {
     // run gRPC server
     app = await createMockAppHelper();
+    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -66,6 +69,9 @@ describe('Register by email functional tests', () => {
     }
     if (userService) {
       await userService.stop();
+    }
+    if (sessionRedisClient) {
+      await sessionRedisClient.disconnect();
     }
   });
 

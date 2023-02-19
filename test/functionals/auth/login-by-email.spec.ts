@@ -19,29 +19,27 @@ import {
 import {
   UserResponse,
   GetUserByEmailAndPasswordRequest,
-  GetUserByIdRequest,
 } from 'metascape-user-api-client';
 import { AuthTokenInterface } from '../../../src/auth-token/services/auth-token.interface';
 import { RefreshTokenInterface } from '../../../src/refresh-token/services/refresh-token.interface';
-import { TokenIsClosedException } from '../../../src/auth/exceptions/token-is-closed.exception';
-import { SessionIsClosedException } from '../../../src/auth/exceptions/session-is-closed.exception';
 import { DataSource } from 'typeorm';
 import { SessionModel } from '../../../src/auth/models/session.model';
 import { TokenModel } from '../../../src/auth/models/token.model';
 import { SessionClient } from 'metascape-session-client';
 
-describe('Refresh functional tests', () => {
+describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
   let client: AuthServiceClient;
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let refreshTokenService: RefreshTokenInterface;
   let authTokenService: AuthTokenInterface;
+  let refreshTokenService: RefreshTokenInterface;
   let dataSource: DataSource;
-  //lolet sessionRedisClient: SessionClient;
+  let sessionRedisClient: SessionClient;
 
   const mockUserPassword = 'password';
+
   const userMockResponse: UserResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
@@ -79,7 +77,7 @@ describe('Refresh functional tests', () => {
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
     dataSource = app.get(DataSource);
-    // sessionRedisClient = app.get(SessionClient);
+    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -117,16 +115,6 @@ describe('Refresh functional tests', () => {
         }
         callback(error, userMockResponse);
       },
-      GetUserById: (
-        call: ServerUnaryCall<GetUserByIdRequest, UserResponse>,
-        callback: sendUnaryData<UserResponse>,
-      ) => {
-        let error = null;
-        if (call.request.id !== userMockResponse.data?.id) {
-          error = new GrpcException(status.NOT_FOUND, 'UserIsNotFound', []);
-        }
-        callback(error, userMockResponse);
-      },
     });
     await userService.start();
   });
@@ -144,17 +132,19 @@ describe('Refresh functional tests', () => {
     if (userService) {
       await userService.stop();
     }
-    // if (sessionRedisClient) {
-    //   await sessionRedisClient.disconnect();
-    // }
+    if (sessionRedisClient) {
+      await sessionRedisClient.disconnect();
+    }
   });
 
-  it('should fail due to validation of wrong refreshToken', async () => {
+  it('should fail due to validation of businessId', async () => {
     expect.hasAssertions();
     try {
       await lastValueFrom(
-        client.refresh({
-          refreshToken: 'wrong token',
+        client.loginByEmail({
+          businessId: 'wrong',
+          email: 'test@test.com',
+          password: 'password',
         }),
       );
     } catch (e) {
@@ -162,13 +152,49 @@ describe('Refresh functional tests', () => {
       expect(grpcException.code).toBe(status.INVALID_ARGUMENT);
       expect(grpcException.message).toBe(BadRequestException.name);
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors()[0]).toContain(
-        'refreshToken must be a jwt string',
-      );
+      expect(grpcException.getErrors()[0]).toContain('businessId');
     }
   });
 
-  it('should fail due to token is closed', async () => {
+  it('should fail due to validation of email', async () => {
+    expect.hasAssertions();
+    try {
+      await lastValueFrom(
+        client.loginByEmail({
+          businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
+          email: 'wrong',
+          password: 'password',
+        }),
+      );
+    } catch (e) {
+      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
+      expect(grpcException.code).toBe(status.INVALID_ARGUMENT);
+      expect(grpcException.message).toBe(BadRequestException.name);
+      expect(grpcException.getErrors()).toBeInstanceOf(Array);
+      expect(grpcException.getErrors()[0]).toContain('email');
+    }
+  });
+
+  it('should fail due to user not found error', async () => {
+    expect.hasAssertions();
+    try {
+      await lastValueFrom(
+        client.loginByEmail({
+          businessId: '9f4eb00d-ac78-49e6-80f2-5d635b48b365',
+          email: 'uknown@gmail.com',
+          password: 'password',
+        }),
+      );
+    } catch (e) {
+      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
+      expect(grpcException.code).toBe(status.NOT_FOUND);
+      expect(grpcException.message).toBe('UserIsNotFound');
+      expect(grpcException.getErrors()).toBeInstanceOf(Array);
+      expect(grpcException.getErrors().length).toBe(0);
+    }
+  });
+
+  it('should login user successfully', async () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});
     const res = await lastValueFrom(
@@ -178,121 +204,37 @@ describe('Refresh functional tests', () => {
         password: mockUserPassword as string,
       }),
     );
-    const refreshTokenDto = refreshTokenService.verify(res.data!.refreshToken);
-    await dataSource
-      .getRepository(TokenModel)
-      .update(refreshTokenDto.tokenId, { isClosed: true });
-    try {
-      await lastValueFrom(
-        client.refresh({
-          refreshToken: res?.data?.refreshToken as string,
-        }),
-      );
-    } catch (e) {
-      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
-      expect(grpcException.message).toBe(TokenIsClosedException.name);
-      expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors()[0]).toContain(
-        `Token ${refreshTokenDto.tokenId} is closed`,
-      );
-    }
-  });
-
-  it('should fail due to session is closed', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
-    await dataSource.getRepository(TokenModel).delete({});
-    const res = await lastValueFrom(
-      client.loginByEmail({
-        businessId: userMockResponse.data?.businessId as string,
-        email: userMockResponse.data?.email as string,
-        password: mockUserPassword as string,
-      }),
+    const authJwtPayload = authTokenService.verify(
+      res?.data?.authToken as string,
     );
-    const refreshTokenDto = refreshTokenService.verify(res.data!.refreshToken);
-    const token = await dataSource
-      .getRepository(TokenModel)
-      .findOneBy({ id: refreshTokenDto.tokenId });
-
-    await dataSource
-      .getRepository(SessionModel)
-      .update(token!.sessionId, { isClosed: true });
-    try {
-      await lastValueFrom(
-        client.refresh({
-          refreshToken: res?.data?.refreshToken as string,
-        }),
-      );
-    } catch (e) {
-      const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
-      expect(grpcException.message).toBe(SessionIsClosedException.name);
-      expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors()[0]).toContain(
-        `Session ${token!.sessionId} is closed`,
-      );
-    }
-  });
-
-  it('should refresh succesfully', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
-    await dataSource.getRepository(TokenModel).delete({});
-    const resultAfterLogin = await lastValueFrom(
-      client.loginByEmail({
-        businessId: userMockResponse.data?.businessId as string,
-        email: userMockResponse.data?.email as string,
-        password: mockUserPassword as string,
-      }),
-    );
-    const refreshResult = await lastValueFrom(
-      client.refresh({
-        refreshToken: resultAfterLogin?.data?.refreshToken as string,
-      }),
+    const refreshJwtPayload = refreshTokenService.verify(
+      res?.data?.refreshToken as string,
     );
 
-    const authTokenAfterLoginPayload = authTokenService.verify(
-      resultAfterLogin.data!.authToken,
-    );
-    const authTokenAfterRefreshPayload = authTokenService.verify(
-      refreshResult.data!.authToken,
-    );
-    const refreshTokenAfterRefreshPayload = refreshTokenService.verify(
-      refreshResult.data!.refreshToken,
-    );
     const sessionFromRepoAfterLogin = await dataSource
       .getRepository(SessionModel)
-      .findOneBy({ id: authTokenAfterLoginPayload.sessionId });
-
+      .findOneBy({ id: authJwtPayload.sessionId });
     const tokenFromRepoAfterLogin = await dataSource
       .getRepository(TokenModel)
-      .findOneBy({ id: authTokenAfterLoginPayload.tokenId });
-
-    const sessionFromRepoAfterRefresh = await dataSource
-      .getRepository(SessionModel)
-      .findOneBy({ id: authTokenAfterRefreshPayload.sessionId });
-
-    const tokenFromRepoAfterRefresh = await dataSource
-      .getRepository(TokenModel)
-      .findOneBy({ id: authTokenAfterRefreshPayload.tokenId });
-    // const sessionFromRedis = await sessionRedisClient.getSession(
-    //   authTokenAfterRefreshPayload.sessionId,
-    // );
-
-    expect(refreshResult.data?.authToken).toBeDefined();
-    expect(refreshResult.data?.refreshToken).toBeDefined();
-    expect(authTokenAfterRefreshPayload.id).toBe(userMockResponse.data!.id);
-    expect(authTokenAfterRefreshPayload.businessId).toBe(
-      userMockResponse.data!.businessId,
+      .findOneBy({ id: authJwtPayload.tokenId });
+    const sessionFromRedis = await sessionRedisClient.getSession(
+      authJwtPayload.sessionId,
     );
-    expect(authTokenAfterRefreshPayload.sessionId).toBeDefined();
-    expect(authTokenAfterRefreshPayload.tokenId).toBeDefined();
-    expect(refreshTokenAfterRefreshPayload.tokenId).toBeDefined();
-    expect(sessionFromRepoAfterRefresh).toBeDefined();
-    expect(sessionFromRepoAfterRefresh!.isClosed).toBe(false);
-    expect(sessionFromRepoAfterRefresh!.id).toBe(sessionFromRepoAfterLogin!.id);
-    expect(tokenFromRepoAfterRefresh).toBeDefined();
-    expect(tokenFromRepoAfterLogin!.isClosed).toBe(true);
-    expect(tokenFromRepoAfterRefresh!.isClosed).toBe(false);
-    // expect(sessionFromRedis?.tokenId).toBe(
-    //   authTokenAfterRefreshPayload.tokenId,
-    // );
+
+    expect(res.data?.refreshToken).toBeDefined();
+    expect(res.data?.authToken).toBeDefined();
+    expect(authJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
+    expect(authJwtPayload.id).toBe(userMockResponse.data?.id);
+    expect(authJwtPayload.sessionId).toBeDefined();
+    expect(authJwtPayload.tokenId).toBeDefined();
+    expect(refreshJwtPayload.tokenId).toBe(authJwtPayload.tokenId);
+    expect(sessionFromRepoAfterLogin).toBeDefined();
+    expect(sessionFromRepoAfterLogin!.isClosed).toBe(false);
+    expect(sessionFromRepoAfterLogin!.id).toEqual(
+      tokenFromRepoAfterLogin!.sessionId,
+    );
+    expect(tokenFromRepoAfterLogin).toBeDefined();
+    expect(tokenFromRepoAfterLogin!.isClosed).toBe(false);
+    expect(sessionFromRedis?.tokenId).toBe(authJwtPayload.tokenId);
   });
 });
