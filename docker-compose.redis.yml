@@ -12,6 +12,11 @@ services:
     networks:
       - redis
       - default
+    volumes:
+      - data:/bitnami/redis/data
 networks:
   redis:
     name: redis
+
+volumes:
+  data:
