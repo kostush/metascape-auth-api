@@ -1,8 +1,8 @@
 version: '3.7'
 
 services:
-  redis-auth-test:
-    container_name: redis-auth-test
+  auth_redis_test:
+    container_name: auth_redis_test
     image: bitnami/redis:latest
     restart: always
     environment:
