@@ -46,7 +46,7 @@ export class LoginByEmailUseCase {
     @Inject(RefreshTokenFactoryInterface)
     private readonly refreshTokenFactoryService: RefreshTokenFactoryInterface,
     @Inject(AuthTokenFactoryInterface)
-    private readonly authTokenFactoryService: AuthTokenFactoryInterface, //
+    private readonly authTokenFactoryService: AuthTokenFactoryInterface,
     @Inject(SessionClient)
     private readonly sessionRedisClient: SessionClient,
   ) {}

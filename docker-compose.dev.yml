@@ -19,6 +19,7 @@ services:
     networks:
       - metascape
       - default
+      - redis
     depends_on:
       - auth_db
       - auth_redis

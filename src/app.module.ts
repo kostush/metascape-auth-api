@@ -12,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ParamsModule } from './params/params.module';
 import PARAMETERS from './params/params.constants';
 import { OgmaInterceptor, OgmaModule, OgmaService } from '@ogma/nestjs-module';
+import { SessionClientModule } from 'metascape-session-client/dist/session-client.module';
 
 @Module({
   imports: [
@@ -87,6 +88,28 @@ import { OgmaInterceptor, OgmaModule, OgmaService } from '@ogma/nestjs-module';
         PARAMETERS.LOGGER_TRANSPORT_LOGSTASH_PORT,
         PARAMETERS.LOGGER_TRANSPORT_LOGSTASH_LEVEL,
         PARAMETERS.LOGGER_TRANSPORT_LOGSTASH_MAX_CONNECT_RETRIES,
+      ],
+      imports: [ParamsModule],
+    }),
+    SessionClientModule.registerAsync({
+      useFactory: (
+        REDIS_HOST: string,
+        REDIS_PORT: number,
+        REDIS_USER: string,
+        REDIS_PASSWORD: string,
+      ) => {
+        return {
+          host: REDIS_HOST,
+          port: REDIS_PORT,
+          username: REDIS_USER,
+          password: REDIS_PASSWORD,
+        };
+      },
+      inject: [
+        PARAMETERS.REDIS_HOST,
+        PARAMETERS.REDIS_PORT,
+        PARAMETERS.REDIS_USER,
+        PARAMETERS.REDIS_PASSWORD,
       ],
       imports: [ParamsModule],
     }),

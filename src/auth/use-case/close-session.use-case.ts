@@ -27,7 +27,6 @@ export class CloseSessionUseCase {
       );
     }
     session.isClosed = true;
-    await this.sessionRedisClient.closeSession(session.id);
     await this.sessionRepository.save(session);
   }
 }
