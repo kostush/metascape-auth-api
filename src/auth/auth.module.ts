@@ -41,7 +41,7 @@ import { LoginResponseFactoryInterface } from './factory/login-response-factory.
 import { LoginResponseFactoryService } from './factory/login-response-factory.service';
 import { CloseSessionUseCase } from './use-case/close-session.use-case';
 import { CloseSessionController } from './controllers/close-session.controller';
-import { SessionClientModule } from 'metascape-session-client/dist/session-client.module';
+import { SessionClientModule } from 'metascape-session-client';
 
 @Module({
   controllers: [
