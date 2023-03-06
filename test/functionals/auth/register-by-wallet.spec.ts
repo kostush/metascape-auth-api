@@ -17,7 +17,6 @@ import {
   WalletResponse,
 } from 'metascape-wallet-api-client';
 import { CreateUserRequest, UserResponse } from 'metascape-user-api-client';
-import { SessionClient } from 'metascape-session-client';
 
 describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -25,7 +24,6 @@ describe('Register by wallet functional tests', () => {
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let sessionRedisClient: SessionClient;
   const walletMockResponse: WalletResponse = {
     data: {
       businessId: '1bdbf2ce-3057-497c-9ddd-a076b6f598d6',
@@ -49,7 +47,6 @@ describe('Register by wallet functional tests', () => {
   beforeAll(async () => {
     // run gRPC server
     app = await createMockAppHelper();
-    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -91,9 +88,6 @@ describe('Register by wallet functional tests', () => {
     }
     if (userService) {
       await userService.stop();
-    }
-    if (sessionRedisClient) {
-      await sessionRedisClient.disconnect();
     }
   });
 

@@ -63,7 +63,6 @@ export class RefreshUseCase {
     );
 
     if (oldToken.session!.isClosed) {
-      await this.sessionRedisClient.closeSession(oldToken.sessionId);
       throw new SessionIsClosedException(
         `Session ${oldToken.session!.id} is closed`,
       );

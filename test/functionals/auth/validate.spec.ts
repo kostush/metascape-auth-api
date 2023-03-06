@@ -20,7 +20,6 @@ import {
   UserResponse,
   GetUserByEmailAndPasswordRequest,
 } from 'metascape-user-api-client';
-import { SessionClient } from 'metascape-session-client';
 
 describe('Validate functional tests', () => {
   let app: INestMicroservice;
@@ -28,7 +27,6 @@ describe('Validate functional tests', () => {
   let clientProxy: ClientGrpcProxy;
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
-  let sessionRedisClient: SessionClient;
 
   const mockUserPassword = 'password';
   const userMockResponse: UserResponse = {
@@ -68,7 +66,6 @@ describe('Validate functional tests', () => {
   beforeAll(async () => {
     // run gRPC server
     app = await createMockAppHelper();
-    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -122,9 +119,6 @@ describe('Validate functional tests', () => {
     }
     if (userService) {
       await userService.stop();
-    }
-    if (sessionRedisClient) {
-      await sessionRedisClient.disconnect();
     }
   });
 

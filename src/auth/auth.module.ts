@@ -41,7 +41,7 @@ import { LoginResponseFactoryInterface } from './factory/login-response-factory.
 import { LoginResponseFactoryService } from './factory/login-response-factory.service';
 import { CloseSessionUseCase } from './use-case/close-session.use-case';
 import { CloseSessionController } from './controllers/close-session.controller';
-import { SessionClient } from 'metascape-session-client';
+import { SessionClientModule } from 'metascape-session-client/dist/session-client.module';
 
 @Module({
   controllers: [
@@ -92,16 +92,6 @@ import { SessionClient } from 'metascape-session-client';
       provide: LoginResponseFactoryInterface,
       useClass: LoginResponseFactoryService,
     },
-    {
-      provide: SessionClient,
-      useFactory: async (sessionRedisUrl: string) => {
-        const sessionClient = new SessionClient({ url: sessionRedisUrl });
-        await sessionClient.connect();
-        return sessionClient;
-      },
-      inject: [PARAMETERS.REDIS_URL],
-    },
-
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,
     LoginByWalletUseCase,
@@ -116,6 +106,27 @@ import { SessionClient } from 'metascape-session-client';
     SharedModule,
     RefreshTokenModule,
     AuthTokenModule,
+    SessionClientModule.registerAsync({
+      useFactory: (
+        REDIS_HOST: string,
+        REDIS_PORT: number,
+        REDIS_USER: string,
+        REDIS_PASSWORD: string,
+      ) => {
+        return {
+          socket: { host: REDIS_HOST, port: REDIS_PORT },
+          username: REDIS_USER,
+          password: REDIS_PASSWORD,
+        };
+      },
+      inject: [
+        PARAMETERS.REDIS_HOST,
+        PARAMETERS.REDIS_PORT,
+        PARAMETERS.REDIS_USER,
+        PARAMETERS.REDIS_PASSWORD,
+      ],
+      imports: [ParamsModule],
+    }),
   ],
 })
 export class AuthModule {}

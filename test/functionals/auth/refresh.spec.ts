@@ -144,9 +144,6 @@ describe('Refresh functional tests', () => {
     if (userService) {
       await userService.stop();
     }
-    if (sessionRedisClient) {
-      await sessionRedisClient.disconnect();
-    }
   });
 
   it('should fail due to validation of wrong refreshToken', async () => {
