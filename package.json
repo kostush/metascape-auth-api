@@ -43,6 +43,7 @@
     "metascape-common-api": "git+ssh://git@bitbucket.org:proj-metascape/metascape-common-api#0.19.0",
     "metascape-user-api-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-user-api-client#0.6.0",
     "metascape-wallet-api-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-wallet-api-client#0.4.0",
+    "metascape-session-client": "git+ssh://git@bitbucket.org:proj-metascape/metascape-session-client#0.3.0",
     "pg": "^8.8.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

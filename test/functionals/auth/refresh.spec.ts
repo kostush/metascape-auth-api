@@ -28,6 +28,7 @@ import { SessionIsClosedException } from '../../../src/auth/exceptions/session-i
 import { DataSource } from 'typeorm';
 import { SessionModel } from '../../../src/auth/models/session.model';
 import { TokenModel } from '../../../src/auth/models/token.model';
+import { SessionClient } from 'metascape-session-client';
 
 describe('Refresh functional tests', () => {
   let app: INestMicroservice;
@@ -38,6 +39,7 @@ describe('Refresh functional tests', () => {
   let refreshTokenService: RefreshTokenInterface;
   let authTokenService: AuthTokenInterface;
   let dataSource: DataSource;
+  let sessionRedisClient: SessionClient;
 
   const mockUserPassword = 'password';
   const userMockResponse: UserResponse = {
@@ -77,6 +79,7 @@ describe('Refresh functional tests', () => {
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
     dataSource = app.get(DataSource);
+    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -266,6 +269,9 @@ describe('Refresh functional tests', () => {
     const tokenFromRepoAfterRefresh = await dataSource
       .getRepository(TokenModel)
       .findOneBy({ id: authTokenAfterRefreshPayload.tokenId });
+    const sessionFromRedis = await sessionRedisClient.getSession(
+      authTokenAfterRefreshPayload.sessionId,
+    );
 
     expect(refreshResult.data?.authToken).toBeDefined();
     expect(refreshResult.data?.refreshToken).toBeDefined();
@@ -282,5 +288,8 @@ describe('Refresh functional tests', () => {
     expect(tokenFromRepoAfterRefresh).toBeDefined();
     expect(tokenFromRepoAfterLogin!.isClosed).toBe(true);
     expect(tokenFromRepoAfterRefresh!.isClosed).toBe(false);
+    expect(sessionFromRedis?.tokenId).toBe(
+      authTokenAfterRefreshPayload.tokenId,
+    );
   });
 });

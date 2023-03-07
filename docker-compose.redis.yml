@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  auth_redis:
+    container_name: auth_redis
+    image: bitnami/redis:latest
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - redis
+      - default
+    volumes:
+      - ./redis_data/:/bitnami/redis/data/
+networks:
+  redis:
+    name: redis
+
+volumes:
+  data:

@@ -3,6 +3,7 @@ import { SessionRepositoryInterface } from '../repositories/session-repository.i
 import { CloseSessionRequest } from '../requests/close-session.request';
 import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
 import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
+import { SessionClient } from 'metascape-session-client';
 
 @Injectable()
 export class CloseSessionUseCase {
@@ -11,6 +12,8 @@ export class CloseSessionUseCase {
     private readonly sessionRepository: SessionRepositoryInterface,
     @Inject(TokenRepositoryInterface)
     private readonly tokenRepository: TokenRepositoryInterface,
+    @Inject(SessionClient)
+    private readonly sessionRedisClient: SessionClient,
   ) {}
 
   async execute(request: CloseSessionRequest): Promise<void> {

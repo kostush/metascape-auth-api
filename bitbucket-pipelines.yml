@@ -8,6 +8,11 @@ definitions:
         POSTGRES_USER: admin
         POSTGRES_PASSWORD: admin
         POSTGRES_DB: test
+    redis:
+      image: bitnami/redis:latest
+      environment:
+        REDIS_PASSWORD: admin
+        ALLOW_EMPTY_PASSWORD: \'no\'
   steps:
     - step: &Code-quality-step
         name: Run code quality
@@ -33,6 +38,7 @@ definitions:
           - node
         services:
           - postgres
+          - redis
     - step: &Dev-deploy-step
         name: Run deploy to dev server
         deployment: Dev

@@ -26,6 +26,7 @@ import { SessionModel } from '../../../src/auth/models/session.model';
 import { TokenModel } from '../../../src/auth/models/token.model';
 import { SessionNotFoundException } from '../../../src/auth/exceptions/session-not-found.exception';
 import { SessionIsClosedException } from '../../../src/auth/exceptions/session-is-closed.exception';
+import { SessionClient } from 'metascape-session-client';
 
 describe('Close session functional tests', () => {
   let app: INestMicroservice;
@@ -34,6 +35,7 @@ describe('Close session functional tests', () => {
   let walletService: GrpcMockServer;
   let userService: GrpcMockServer;
   let dataSource: DataSource;
+  let sessionRedisClient: SessionClient;
 
   const mockUserPassword = 'password';
   const userMockResponse: UserResponse = {
@@ -86,6 +88,7 @@ describe('Close session functional tests', () => {
     // run gRPC server
     app = await createMockAppHelper();
     dataSource = app.get(DataSource);
+    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -224,6 +227,8 @@ describe('Close session functional tests', () => {
     const sessionFromRepo = await dataSource
       .getRepository(SessionModel)
       .findOneBy({ id: mockSession.id });
+    const tokenFromRedis = await sessionRedisClient.getSession(mockSession.id);
     expect(sessionFromRepo!.isClosed).toBe(true);
+    expect(tokenFromRedis).toBeNull();
   });
 });

@@ -25,6 +25,7 @@ import { RefreshTokenInterface } from '../../../src/refresh-token/services/refre
 import { DataSource } from 'typeorm';
 import { SessionModel } from '../../../src/auth/models/session.model';
 import { TokenModel } from '../../../src/auth/models/token.model';
+import { SessionClient } from 'metascape-session-client';
 
 describe('Register by wallet functional tests', () => {
   let app: INestMicroservice;
@@ -35,6 +36,7 @@ describe('Register by wallet functional tests', () => {
   let authTokenService: AuthTokenInterface;
   let refreshTokenService: RefreshTokenInterface;
   let dataSource: DataSource;
+  let sessionRedisClient: SessionClient;
 
   const mockUserPassword = 'password';
 
@@ -75,6 +77,7 @@ describe('Register by wallet functional tests', () => {
     authTokenService = app.get(AuthTokenInterface);
     refreshTokenService = app.get(RefreshTokenInterface);
     dataSource = app.get(DataSource);
+    sessionRedisClient = app.get(SessionClient);
     await app.listen();
 
     // create gRPC client
@@ -211,6 +214,9 @@ describe('Register by wallet functional tests', () => {
     const tokenFromRepoAfterLogin = await dataSource
       .getRepository(TokenModel)
       .findOneBy({ id: authJwtPayload.tokenId });
+    const sessionFromRedis = await sessionRedisClient.getSession(
+      authJwtPayload.sessionId,
+    );
 
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
@@ -226,5 +232,6 @@ describe('Register by wallet functional tests', () => {
     );
     expect(tokenFromRepoAfterLogin).toBeDefined();
     expect(tokenFromRepoAfterLogin!.isClosed).toBe(false);
+    expect(sessionFromRedis?.tokenId).toBe(authJwtPayload.tokenId);
   });
 });

@@ -36,4 +36,8 @@ export const validationSchema = Joi.object({
   [PARAMETERS.LOGGER_TRANSPORT_LOGSTASH_LEVEL]: Joi.string().min(0).optional(),
   [PARAMETERS.LOGGER_TRANSPORT_LOGSTASH_MAX_CONNECT_RETRIES]:
     Joi.number().optional(),
+  [PARAMETERS.REDIS_HOST]: Joi.string().required(),
+  [PARAMETERS.REDIS_USER]: Joi.string().required(),
+  [PARAMETERS.REDIS_PORT]: Joi.number().required(),
+  [PARAMETERS.REDIS_PASSWORD]: Joi.string().required(),
 });

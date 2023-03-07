@@ -21,6 +21,7 @@ import { AuthTokenInterface } from '../../auth-token/services/auth-token.interfa
 import { RefreshTokenInterface } from '../../refresh-token/services/refresh-token.interface';
 import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refresh-token-factory.interface';
 import { AuthTokenFactoryInterface } from '../../auth-token/factory/auth-token-factory.interface';
+import { SessionClient } from 'metascape-session-client';
 
 @Injectable()
 export class LoginByWalletUseCase {
@@ -47,6 +48,8 @@ export class LoginByWalletUseCase {
     private readonly refreshTokenFactoryService: RefreshTokenFactoryInterface,
     @Inject(AuthTokenFactoryInterface)
     private readonly authTokenFactoryService: AuthTokenFactoryInterface,
+    @Inject(SessionClient)
+    private readonly sessionRedisClient: SessionClient,
   ) {}
 
   async execute(
@@ -71,6 +74,7 @@ export class LoginByWalletUseCase {
     const session = this.sessionFactory.createSession(userData.data!.id);
     const token = this.tokenFactory.createToken(session.id);
     session.tokens = [token];
+    await this.sessionRedisClient.setSession(session.id, token.id);
     await this.sessionRepository.save(session);
     const authPayload = this.authTokenFactoryService.createPayload(
       userData.data!,

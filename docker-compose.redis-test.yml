@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  auth_redis_test:
+    container_name: auth_redis_test
+    image: bitnami/redis:latest
+    restart: always
+    environment:
+      - ALLOW_EMPTY_PASSWORD=no
+      - REDIS_PASSWORD=admin
