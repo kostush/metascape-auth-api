@@ -157,6 +157,10 @@ describe('Close all user sessions functional tests', () => {
     await userService.start();
   });
 
+  beforeEach(async () => {
+    sessionRedisClient.closeAllSessions([sessionId1, sessionId2]);
+  });
+
   afterAll(async () => {
     if (app) {
       await app.close();
@@ -230,12 +234,16 @@ describe('Close all user sessions functional tests', () => {
   it('should close all sessions succesfully', async () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});
+
     mockSession1.isClosed = false;
     mockSession2.isClosed = false;
     await dataSource.getRepository(SessionModel).insert(mockSession1);
     await dataSource.getRepository(TokenModel).insert(mockToken1);
+    await sessionRedisClient.setSession(sessionId1, mockToken1.id);
+
     await dataSource.getRepository(SessionModel).insert(mockSession2);
     await dataSource.getRepository(TokenModel).insert(mockToken2);
+    await sessionRedisClient.setSession(sessionId2, mockToken2.id);
     await lastValueFrom(
       client.closeAllUserSessions({
         userId: userId,
@@ -258,5 +266,7 @@ describe('Close all user sessions functional tests', () => {
     expect(tokenFromRedis1).toBeNull();
     expect(sessionFromRepo2!.isClosed).toBe(true);
     expect(tokenFromRedis2).toBeNull();
+    expect(await sessionRedisClient.getSession(mockSession1.id)).toBeNull();
+    expect(await sessionRedisClient.getSession(mockSession2.id)).toBeNull();
   });
 });
