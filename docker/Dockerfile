@@ -11,13 +11,11 @@ COPY ssh/id_rsa /root/.ssh/id_rsa
 RUN chmod 600 /root/.ssh/id_rsa
 RUN ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
 
-COPY package*.json ./
-
-RUN npm install
-
 COPY . .
 
-RUN npm run build
+RUN yarn install
+
+RUN yarn build
 
 FROM node:16.16-alpine as production
 
@@ -30,12 +28,10 @@ RUN apk add --no-cache openssh
 RUN apk add --no-cache git
 COPY --from=development /root/.ssh /root/.ssh
 
-COPY package*.json ./
-
-RUN npm install --only=production
-
 COPY . .
+
+RUN yarn install --production
 
 COPY --from=development /usr/src/app/dist ./dist
 
-CMD npm run migration:run ; node dist/main
+CMD yarn migration:run ; node dist/main

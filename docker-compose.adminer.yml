@@ -9,3 +9,9 @@ services:
       ADMINER_PLUGINS: tables-filter tinymce
     ports:
       - 8080:8080
+    networks:
+      - database
+      - default
+networks:
+  database:
+    name: database
