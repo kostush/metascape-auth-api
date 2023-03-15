@@ -9,56 +9,56 @@ env: ## Create env file
 	copy .env.dist .env
 
 ##
-## NPM
+## YARN
 ## -----------------
 ##
-npm-install: ## Update vendor
-	$(EXEC_SERVICE) npm install
+yarn-install: ## Update vendor
+	$(EXEC_SERVICE) yarn install
 
-npm-migration-run: ## Run migration
-	$(EXEC_SERVICE) npm run migration:run
+yarn-migration-run: ## Run migration
+	$(EXEC_SERVICE) yarn migration:run
 
-npm-migration-revert: ## Revert migration
-	$(EXEC_SERVICE) npm run migration:revert
+yarn-migration-revert: ## Revert migration
+	$(EXEC_SERVICE) yarn migration:revert
 
-npm-migration-generate: ## Generate migration
-	$(EXEC_SERVICE) npm run migration:generate
+yarn-migration-generate: ## Generate migration
+	$(EXEC_SERVICE) yarn migration:generate
 
-npm-migration-create: ## Create migration
-	$(EXEC_SERVICE) npm run migration:create
+yarn-migration-create: ## Create migration
+	$(EXEC_SERVICE) yarn migration:create
 
-npm-start: ## Run prod server
-	$(EXEC_SERVICE) npm run start
+yarn-start: ## Run prod server
+	$(EXEC_SERVICE) yarn start
 
-npm-start-dev: ## Run dev server
-	$(EXEC_SERVICE) npm run start:dev
+yarn-start-dev: ## Run dev server
+	$(EXEC_SERVICE) yarn start:dev
 
-npm-start-debug: ##  Run debug server
-	$(EXEC_SERVICE) npm run start:debug
+yarn-start-debug: ##  Run debug server
+	$(EXEC_SERVICE) yarn start:debug
 
-npm-build: ## Build app
-	$(EXEC_SERVICE) npm run build
+yarn-build: ## Build app
+	$(EXEC_SERVICE) yarn build
 
-npm-lint: ## Check code style
-	$(EXEC_SERVICE) npm run lint
+yarn-lint: ## Check code style
+	$(EXEC_SERVICE) yarn lint
 
-npm-lint-fix: ## Fix code style
-	$(EXEC_SERVICE) npm run lint:fix
+yarn-lint-fix: ## Fix code style
+	$(EXEC_SERVICE) yarn lint:fix
 
-npm-proto: ## Generate pb file based on proto
-	$(EXEC_SERVICE) npm run proto
+yarn-proto: ## Generate pb file based on proto
+	$(EXEC_SERVICE) yarn proto
 
-npm-test: ## Run test
-	$(EXEC_SERVICE) npm run migration:run:test
-	$(EXEC_SERVICE) npm run test
+yarn-test: ## Run test
+	$(EXEC_SERVICE) yarn migration:run:test
+	$(EXEC_SERVICE) yarn test
 
-npm-test-cov: ## Run test coverage
-	$(EXEC_SERVICE) npm run migration:run:test
-	$(EXEC_SERVICE) npm run test:cov
+yarn-test-cov: ## Run test coverage
+	$(EXEC_SERVICE) yarn migration:run:test
+	$(EXEC_SERVICE) yarn test:cov
 
-npm-test-debug: ## Run test
-	$(EXEC_SERVICE) npm run migration:run:test
-	$(EXEC_SERVICE) npm run test:debug
+yarn-test-debug: ## Run test
+	$(EXEC_SERVICE) yarn migration:run:test
+	$(EXEC_SERVICE) yarn test:debug
 ##
 ## Docker compose dev
 ## -----------------

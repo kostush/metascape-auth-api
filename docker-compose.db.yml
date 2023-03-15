@@ -11,5 +11,11 @@ services:
       PG_DATA: /var/lib/postgresql/data
     volumes:
       - data:/var/lib/postgresql/data
+    networks:
+      - database
+      - default
 volumes:
   data:
+networks:
+  database:
+    name: database
