@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SessionRepositoryInterface } from '../repositories/session-repository.interface';
-import { CloseSessionRequest } from '../requests/close-session.request';
 import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
-import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
 import { SessionClient } from 'metascape-session-client';
 import { CloseAllUserSessionsRequest } from '../requests/close-all-user-sessions.request';
 
