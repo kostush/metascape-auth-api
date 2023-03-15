@@ -91,6 +91,11 @@ export interface CloseSessionRequest {
 export interface CloseSessionResponse {
 }
 
+/** CloseAllUserSessions */
+export interface CloseAllUserSessionsRequest {
+  userId: string;
+}
+
 export const METASCAPE_AUTH_PACKAGE_NAME = "metascape.auth";
 
 export interface AuthServiceClient {
@@ -107,6 +112,8 @@ export interface AuthServiceClient {
   refresh(request: RefreshRequest): Observable<LoginResponse>;
 
   closeSession(request: CloseSessionRequest): Observable<CloseSessionResponse>;
+
+  closeAllUserSessions(request: CloseAllUserSessionsRequest): Observable<CloseSessionResponse>;
 }
 
 export interface AuthServiceController {
@@ -129,6 +136,10 @@ export interface AuthServiceController {
   closeSession(
     request: CloseSessionRequest,
   ): Promise<CloseSessionResponse> | Observable<CloseSessionResponse> | CloseSessionResponse;
+
+  closeAllUserSessions(
+    request: CloseAllUserSessionsRequest,
+  ): Promise<CloseSessionResponse> | Observable<CloseSessionResponse> | CloseSessionResponse;
 }
 
 export function AuthServiceControllerMethods() {
@@ -141,6 +152,7 @@ export function AuthServiceControllerMethods() {
       "validate",
       "refresh",
       "closeSession",
+      "closeAllUserSessions",
     ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);

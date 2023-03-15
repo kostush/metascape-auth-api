@@ -4,9 +4,10 @@ import { CloseSessionRequest } from '../requests/close-session.request';
 import { TokenRepositoryInterface } from '../repositories/token-repository.interface';
 import { SessionIsClosedException } from '../exceptions/session-is-closed.exception';
 import { SessionClient } from 'metascape-session-client';
+import { CloseAllUserSessionsRequest } from '../requests/close-all-user-sessions.request';
 
 @Injectable()
-export class CloseSessionUseCase {
+export class CloseAllUserSessionsUseCase {
   constructor(
     @Inject(SessionRepositoryInterface)
     private readonly sessionRepository: SessionRepositoryInterface,
@@ -16,18 +17,21 @@ export class CloseSessionUseCase {
     private readonly sessionRedisClient: SessionClient,
   ) {}
 
-  async execute(request: CloseSessionRequest): Promise<void> {
-    const session = await this.sessionRepository.getOneById(
-      request.sessionId,
-      true,
+  async execute(request: CloseAllUserSessionsRequest): Promise<void> {
+    const sessions = await this.sessionRepository.findAllNotClosedByUserId(
+      request.userId,
     );
-    if (session.isClosed) {
-      throw new SessionIsClosedException(
-        `session ${session.id} is olready closed`,
-      );
+
+    if (!sessions.length) {
+      return;
     }
-    session.isClosed = true;
-    await this.sessionRedisClient.closeSession(session.id);
-    await this.sessionRepository.save(session);
+    await this.sessionRedisClient.closeAllSessions(
+      sessions.map((session) => session.id),
+    );
+
+    for (const session of sessions) {
+      session.isClosed = true;
+    }
+    await this.sessionRepository.saveAll(sessions);
   }
 }

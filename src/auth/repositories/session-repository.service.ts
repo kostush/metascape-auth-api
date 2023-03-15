@@ -17,6 +17,18 @@ export class SessionRepository implements SessionRepositoryInterface {
   async findAll(): Promise<SessionModel[]> {
     return this.sessionRepository.find();
   }
+  async findAllNotClosedByUserId(
+    userId: string,
+    withRelation = false,
+  ): Promise<SessionModel[]> {
+    return this.sessionRepository.find({
+      relations: { tokens: withRelation },
+      where: {
+        userId: userId,
+        isClosed: false,
+      },
+    });
+  }
 
   async findOneById(
     id: string,
@@ -53,7 +65,7 @@ export class SessionRepository implements SessionRepositoryInterface {
     return session;
   }
 
-  async save(session: SessionModel): Promise<void> {
+  private prepareForSave(session: SessionModel): void {
     if (!session.createdAt) {
       session.createdAt = this.dateTime.getCurrentUnixTimestamp();
     }
@@ -64,7 +76,16 @@ export class SessionRepository implements SessionRepositoryInterface {
       }
       token.updatedAt = this.dateTime.getCurrentUnixTimestamp();
     });
-    await this.sessionRepository.save(session);
+  }
+  async save(session: SessionModel): Promise<void> {
+    this.prepareForSave(session);
+    await this.sessionRepository.save([session]);
+  }
+
+  async saveAll(sessions: SessionModel[]): Promise<void> {
+    for (const session of sessions) {
+      await this.save(session);
+    }
   }
 
   async delete(session: SessionModel): Promise<void> {

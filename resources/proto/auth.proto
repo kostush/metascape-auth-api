@@ -10,6 +10,7 @@ service AuthService {
   rpc Validate (ValidateRequest) returns (ValidateResponse) {}
   rpc Refresh (RefreshRequest) returns (LoginResponse){}
   rpc CloseSession (CloseSessionRequest) returns (CloseSessionResponse) {}
+  rpc CloseAllUserSessions (CloseAllUserSessionsRequest) returns (CloseSessionResponse) {}
 }
 
 // RegisterByEmail
@@ -95,4 +96,9 @@ message CloseSessionRequest {
   string sessionId = 1;
 }
 message CloseSessionResponse {}
+
+//CloseAllUserSessions
+message CloseAllUserSessionsRequest {
+  string userId = 1;
+}
 
