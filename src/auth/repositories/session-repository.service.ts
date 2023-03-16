@@ -79,13 +79,14 @@ export class SessionRepository implements SessionRepositoryInterface {
   }
   async save(session: SessionModel): Promise<void> {
     this.prepareForSave(session);
-    await this.sessionRepository.save([session]);
+    await this.sessionRepository.save(session);
   }
 
   async saveAll(sessions: SessionModel[]): Promise<void> {
     for (const session of sessions) {
-      await this.save(session);
+      this.prepareForSave(session);
     }
+    await this.sessionRepository.save(sessions);
   }
 
   async delete(session: SessionModel): Promise<void> {
