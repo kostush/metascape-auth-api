@@ -140,6 +140,12 @@ describe('Close session functional tests', () => {
     await userService.start();
   });
 
+  beforeEach(async () => {
+    await dataSource.getRepository(SessionModel).delete({});
+    await dataSource.getRepository(TokenModel).delete({});
+    await sessionRedisClient.closeAllSessions([mockSession.id]);
+  });
+
   afterAll(async () => {
     if (app) {
       await app.close();
@@ -175,7 +181,6 @@ describe('Close session functional tests', () => {
   });
 
   it('should fail due to session does not exist', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
     try {
       await lastValueFrom(
         client.closeSession({
@@ -193,7 +198,6 @@ describe('Close session functional tests', () => {
   });
 
   it('should fail due to session is closed', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
     mockSession.isClosed = true;
     await dataSource.getRepository(SessionModel).insert(mockSession);
     try {
@@ -213,16 +217,21 @@ describe('Close session functional tests', () => {
   });
 
   it('should close session succesfully', async () => {
-    await dataSource.getRepository(SessionModel).delete({});
-    await dataSource.getRepository(TokenModel).delete({});
     mockSession.isClosed = false;
     await dataSource.getRepository(SessionModel).insert(mockSession);
     await dataSource.getRepository(TokenModel).insert(mockToken);
+    await sessionRedisClient.setSession(mockSession.id, mockToken.id);
+    const sessionFromRedis = await sessionRedisClient.getSession(
+      mockSession.id,
+    );
     await lastValueFrom(
       client.closeSession({
         sessionId: mockSession.id,
       }),
     );
+
+    const sessionFromRedisAfterCloseSession =
+      await sessionRedisClient.getSession(mockSession.id);
 
     const sessionFromRepo = await dataSource
       .getRepository(SessionModel)
@@ -230,5 +239,7 @@ describe('Close session functional tests', () => {
     const tokenFromRedis = await sessionRedisClient.getSession(mockSession.id);
     expect(sessionFromRepo!.isClosed).toBe(true);
     expect(tokenFromRedis).toBeNull();
+    expect(sessionFromRedis).toEqual({ tokenId: mockToken.id });
+    expect(sessionFromRedisAfterCloseSession).toBeNull();
   });
 });
