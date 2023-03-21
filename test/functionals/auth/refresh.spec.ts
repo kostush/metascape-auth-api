@@ -273,6 +273,11 @@ describe('Refresh functional tests', () => {
       authTokenAfterRefreshPayload.sessionId,
     );
 
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    const checkedSessionAfterTimeOut = await sessionRedisClient.getSession(
+      authTokenAfterRefreshPayload.sessionId,
+    );
+
     expect(refreshResult.data?.authToken).toBeDefined();
     expect(refreshResult.data?.refreshToken).toBeDefined();
     expect(authTokenAfterRefreshPayload.id).toBe(userMockResponse.data!.id);
@@ -291,5 +296,6 @@ describe('Refresh functional tests', () => {
     expect(sessionFromRedis?.tokenId).toBe(
       authTokenAfterRefreshPayload.tokenId,
     );
+    expect(checkedSessionAfterTimeOut).toBeNull();
   });
 });

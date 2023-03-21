@@ -240,6 +240,12 @@ describe('Login by wallet functional tests', () => {
       authJwtPayload.sessionId,
     );
 
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    const checkedSessionAfterTimeOut = await sessionRedisClient.getSession(
+      authJwtPayload.sessionId,
+    );
+    expect(checkedSessionAfterTimeOut).toBeNull();
+
     expect(res.data?.refreshToken).toBeDefined();
     expect(res.data?.authToken).toBeDefined();
     expect(authJwtPayload.businessId).toBe(userMockResponse.data?.businessId);
