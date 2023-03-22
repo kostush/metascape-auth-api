@@ -40,5 +40,4 @@ export const validationSchema = Joi.object({
   [PARAMETERS.REDIS_USER]: Joi.string().required(),
   [PARAMETERS.REDIS_PORT]: Joi.number().required(),
   [PARAMETERS.REDIS_PASSWORD]: Joi.string().required(),
-  [PARAMETERS.REDIS_AUTH_SESSION_EXPIRES_IN]: Joi.number().required(),
 });
