@@ -46,8 +46,8 @@ export class RefreshUseCase {
     private readonly authTokenFactoryService: AuthTokenFactoryInterface,
     @Inject(SessionClient)
     private readonly sessionRedisClient: SessionClient,
-    @Inject(PARAMETERS.REDIS_AUTH_SESSION_EXPIRES_IN)
-    private readonly redisExpiresInSeconds: number,
+    @Inject(PARAMETERS.JWT_AUTH_EXPIRES_IN)
+    private readonly jwtAuthExpiriesIn: number,
   ) {}
 
   async execute(
@@ -89,7 +89,7 @@ export class RefreshUseCase {
     await this.sessionRedisClient.setSession(
       oldToken.sessionId,
       token.id,
-      this.redisExpiresInSeconds,
+      this.jwtAuthExpiriesIn,
     );
 
     await this.tokenRepository.save(token);

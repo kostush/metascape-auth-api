@@ -51,8 +51,8 @@ export class LoginByWalletUseCase {
     private readonly authTokenFactoryService: AuthTokenFactoryInterface,
     @Inject(SessionClient)
     private readonly sessionRedisClient: SessionClient,
-    @Inject(PARAMETERS.REDIS_AUTH_SESSION_EXPIRES_IN)
-    private readonly redisExpiresInSeconds: number,
+    @Inject(PARAMETERS.JWT_AUTH_EXPIRES_IN)
+    private readonly jwtAuthExpiriesIn: number,
   ) {}
 
   async execute(
@@ -80,7 +80,7 @@ export class LoginByWalletUseCase {
     await this.sessionRedisClient.setSession(
       session.id,
       token.id,
-      this.redisExpiresInSeconds,
+      this.jwtAuthExpiriesIn,
     );
     await this.sessionRepository.save(session);
     const authPayload = this.authTokenFactoryService.createPayload(
