@@ -22,6 +22,7 @@ import { AuthTokenFactoryInterface } from '../../auth-token/factory/auth-token-f
 import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refresh-token-factory.interface';
 import { SessionClient } from 'metascape-session-client';
 import PARAMETERS from '../../params/params.constants';
+import { RedisExpiredPeriodInterface } from '../services/redis-expired-period-interface';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -51,7 +52,9 @@ export class LoginByEmailUseCase {
     @Inject(SessionClient)
     private readonly sessionRedisClient: SessionClient,
     @Inject(PARAMETERS.JWT_AUTH_EXPIRES_IN)
-    private readonly jwtAuthExpiriesIn: number,
+    private readonly jwtAuthExpiriesIn: string,
+    @Inject(RedisExpiredPeriodInterface)
+    private readonly redisExpiredPeriodService: RedisExpiredPeriodInterface,
   ) {}
 
   async execute(
@@ -68,11 +71,10 @@ export class LoginByEmailUseCase {
     const session = this.sessionFactory.createSession(userData.data!.id);
     const token = this.tokenFactory.createToken(session.id);
     session.tokens = [token];
-
     await this.sessionRedisClient.setSession(
       session.id,
       token.id,
-      this.jwtAuthExpiriesIn,
+      this.redisExpiredPeriodService.generateExpiredPeriod(),
     );
     await this.sessionRepository.save(session);
 
