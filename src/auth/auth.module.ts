@@ -42,6 +42,8 @@ import { LoginResponseFactoryService } from './factory/login-response-factory.se
 import { CloseSessionUseCase } from './use-case/close-session.use-case';
 import { CloseSessionController } from './controllers/close-session.controller';
 import { SessionClientModule } from 'metascape-session-client';
+import { CloseAllUserSessionsController } from './controllers/close-all-user-sessions.controller';
+import { CloseAllUserSessionsUseCase } from './use-case/close-all-user-sessions.use-case';
 
 @Module({
   controllers: [
@@ -52,6 +54,7 @@ import { SessionClientModule } from 'metascape-session-client';
     ValidateController,
     RefreshController,
     CloseSessionController,
+    CloseAllUserSessionsController,
   ],
   providers: [
     {
@@ -99,6 +102,7 @@ import { SessionClientModule } from 'metascape-session-client';
     ValidateUseCase,
     RefreshUseCase,
     CloseSessionUseCase,
+    CloseAllUserSessionsUseCase,
   ],
   imports: [
     ParamsModule,
