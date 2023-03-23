@@ -1,11 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import PARAMETERS from '../../params/params.constants';
-import { RedisExpiredPeriodInterface } from './redis-expired-period-interface';
+import { SessionExpiredPeriodInterface } from './session-expired-period-interface';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const ms = require('ms');
 
 @Injectable()
-export class RedisExpiredPeriodService implements RedisExpiredPeriodInterface {
+export class SessionExpiredPeriodService
+  implements SessionExpiredPeriodInterface
+{
   constructor(
     @Inject(PARAMETERS.JWT_AUTH_EXPIRES_IN)
     private readonly jwtAuthExpiresIn: string,

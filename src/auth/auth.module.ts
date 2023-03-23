@@ -44,8 +44,8 @@ import { CloseSessionController } from './controllers/close-session.controller';
 import { SessionClientModule } from 'metascape-session-client';
 import { CloseAllUserSessionsController } from './controllers/close-all-user-sessions.controller';
 import { CloseAllUserSessionsUseCase } from './use-case/close-all-user-sessions.use-case';
-import { RedisExpiredPeriodInterface } from './services/redis-expired-period-interface';
-import { RedisExpiredPeriodService } from './services/redis-expired-period-service';
+import { SessionExpiredPeriodInterface } from './services/session-expired-period-interface';
+import { SessionExpiredPeriodService } from './services/session-expired-period-service';
 
 @Module({
   controllers: [
@@ -98,8 +98,8 @@ import { RedisExpiredPeriodService } from './services/redis-expired-period-servi
       useClass: LoginResponseFactoryService,
     },
     {
-      provide: RedisExpiredPeriodInterface,
-      useClass: RedisExpiredPeriodService,
+      provide: SessionExpiredPeriodInterface,
+      useClass: SessionExpiredPeriodService,
     },
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,
