@@ -1,5 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { SuccessResponse } from 'metascape-common-api';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { GrpcException, SuccessResponse } from 'metascape-common-api';
 import {
   USERS_SERVICE_NAME,
   UsersServiceClient,
@@ -21,6 +21,7 @@ import { RefreshTokenInterface } from '../../refresh-token/services/refresh-toke
 import { AuthTokenFactoryInterface } from '../../auth-token/factory/auth-token-factory.interface';
 import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refresh-token-factory.interface';
 import { SessionClient } from 'metascape-session-client';
+import { status } from '@grpc/grpc-js';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -54,15 +55,23 @@ export class LoginByEmailUseCase {
   async execute(
     request: LoginByEmailRequest,
   ): Promise<SuccessResponse<LoginResponseDataDto>> {
-    const userData = await lastValueFrom(
-      this.usersServiceClient.getUserByEmailAndPassword({
-        businessId: request.businessId,
-        email: request.email,
-        password: request.password,
-      }),
-    );
+    let userData;
+    try {
+      userData = await lastValueFrom(
+        this.usersServiceClient.getUserByEmailAndPassword({
+          businessId: request.businessId,
+          email: request.email,
+          password: request.password,
+        }),
+      );
+    } catch (e) {
+      if (e instanceof GrpcException && e.code == status.NOT_FOUND) {
+        throw new ForbiddenException('email or password is wrong.');
+      }
+      throw e;
+    }
 
-    const session = this.sessionFactory.createSession(userData.data!.id);
+    const session = this.sessionFactory.createSession(userData!.data!.id);
     const token = this.tokenFactory.createToken(session.id);
     session.tokens = [token];
 

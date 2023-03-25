@@ -184,10 +184,13 @@ describe('Register by wallet functional tests', () => {
       );
     } catch (e) {
       const grpcException = GrpcExceptionFactory.createFromGrpcError(e);
-      expect(grpcException.code).toBe(status.NOT_FOUND);
-      expect(grpcException.message).toBe('UserIsNotFound');
+      expect(grpcException.code).toBe(status.PERMISSION_DENIED);
+      expect(grpcException.message).toBe('ForbiddenException');
       expect(grpcException.getErrors()).toBeInstanceOf(Array);
-      expect(grpcException.getErrors().length).toBe(0);
+      expect(grpcException.getErrors().length).toBe(1);
+      expect(grpcException.getErrors()[0]).toContain(
+        'email or password is wrong.',
+      );
     }
   });
 
