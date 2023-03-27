@@ -19,6 +19,7 @@ import { SessionIsClosedException } from '../exceptions/session-is-closed.except
 import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refresh-token-factory.interface';
 import { AuthTokenFactoryInterface } from '../../auth-token/factory/auth-token-factory.interface';
 import { SessionClient } from 'metascape-session-client';
+import { SessionExpiredPeriodInterface } from '../services/session-expired-period-interface';
 
 @Injectable()
 export class RefreshUseCase {
@@ -45,6 +46,8 @@ export class RefreshUseCase {
     private readonly authTokenFactoryService: AuthTokenFactoryInterface,
     @Inject(SessionClient)
     private readonly sessionRedisClient: SessionClient,
+    @Inject(SessionExpiredPeriodInterface)
+    private readonly sessionExpiredPeriodService: SessionExpiredPeriodInterface,
   ) {}
 
   async execute(
@@ -83,7 +86,11 @@ export class RefreshUseCase {
     oldToken.isClosed = true;
     await this.tokenRepository.save(oldToken);
     const token = this.tokenFactory.createToken(oldToken.sessionId);
-    await this.sessionRedisClient.setSession(oldToken.sessionId, token.id);
+    await this.sessionRedisClient.setSession(
+      oldToken.sessionId,
+      token.id,
+      this.sessionExpiredPeriodService.generateExpiredPeriod(),
+    );
 
     await this.tokenRepository.save(token);
     const authPayload = this.authTokenFactoryService.createPayload(

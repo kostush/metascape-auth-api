@@ -21,6 +21,7 @@ import { RefreshTokenInterface } from '../../refresh-token/services/refresh-toke
 import { AuthTokenFactoryInterface } from '../../auth-token/factory/auth-token-factory.interface';
 import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refresh-token-factory.interface';
 import { SessionClient } from 'metascape-session-client';
+import { SessionExpiredPeriodInterface } from '../services/session-expired-period-interface';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -49,6 +50,8 @@ export class LoginByEmailUseCase {
     private readonly authTokenFactoryService: AuthTokenFactoryInterface,
     @Inject(SessionClient)
     private readonly sessionRedisClient: SessionClient,
+    @Inject(SessionExpiredPeriodInterface)
+    private readonly sessionExpiredPeriodService: SessionExpiredPeriodInterface,
   ) {}
 
   async execute(
@@ -65,8 +68,11 @@ export class LoginByEmailUseCase {
     const session = this.sessionFactory.createSession(userData.data!.id);
     const token = this.tokenFactory.createToken(session.id);
     session.tokens = [token];
-
-    await this.sessionRedisClient.setSession(session.id, token.id);
+    await this.sessionRedisClient.setSession(
+      session.id,
+      token.id,
+      this.sessionExpiredPeriodService.generateExpiredPeriod(),
+    );
     await this.sessionRepository.save(session);
 
     const authPayload = this.authTokenFactoryService.createPayload(

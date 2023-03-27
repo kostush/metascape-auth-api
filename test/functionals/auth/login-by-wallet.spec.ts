@@ -213,6 +213,32 @@ describe('Login by wallet functional tests', () => {
     }
   });
 
+  it('session should be expired after env expired time', async () => {
+    await dataSource.getRepository(SessionModel).delete({});
+    await dataSource.getRepository(TokenModel).delete({});
+    const res = await lastValueFrom(
+      client.loginByWallet({
+        businessId: walletMockResponse.data!.businessId,
+        address: walletMockResponse.data!.address,
+        signature: 'signature',
+      }),
+    );
+    const authJwtPayload = authTokenService.verify(
+      res?.data?.authToken as string,
+    );
+
+    const sessionFromRedis = await sessionRedisClient.getSession(
+      authJwtPayload.sessionId,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    const checkedSessionAfterTimeOut = await sessionRedisClient.getSession(
+      authJwtPayload.sessionId,
+    );
+    expect(sessionFromRedis?.tokenId).toBe(authJwtPayload.tokenId);
+    expect(checkedSessionAfterTimeOut).toBeNull();
+  });
+
   it('should login user successfully', async () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});

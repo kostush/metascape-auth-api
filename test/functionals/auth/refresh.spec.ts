@@ -229,6 +229,38 @@ describe('Refresh functional tests', () => {
     }
   });
 
+  it('session should be expired after env expired time', async () => {
+    await dataSource.getRepository(SessionModel).delete({});
+    await dataSource.getRepository(TokenModel).delete({});
+    const resultAfterLogin = await lastValueFrom(
+      client.loginByEmail({
+        businessId: userMockResponse.data?.businessId as string,
+        email: userMockResponse.data?.email as string,
+        password: mockUserPassword as string,
+      }),
+    );
+    const refreshResult = await lastValueFrom(
+      client.refresh({
+        refreshToken: resultAfterLogin?.data?.refreshToken as string,
+      }),
+    );
+    const authTokenAfterRefreshPayload = authTokenService.verify(
+      refreshResult.data!.authToken,
+    );
+    const sessionFromRedis = await sessionRedisClient.getSession(
+      authTokenAfterRefreshPayload.sessionId,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    const checkedSessionAfterTimeOut = await sessionRedisClient.getSession(
+      authTokenAfterRefreshPayload.sessionId,
+    );
+    expect(sessionFromRedis?.tokenId).toBe(
+      authTokenAfterRefreshPayload.tokenId,
+    );
+    expect(checkedSessionAfterTimeOut).toBeNull();
+  });
+
   it('should refresh succesfully', async () => {
     await dataSource.getRepository(SessionModel).delete({});
     await dataSource.getRepository(TokenModel).delete({});
