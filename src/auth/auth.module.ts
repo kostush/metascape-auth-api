@@ -44,6 +44,8 @@ import { CloseSessionController } from './controllers/close-session.controller';
 import { SessionClientModule } from 'metascape-session-client';
 import { CloseAllUserSessionsController } from './controllers/close-all-user-sessions.controller';
 import { CloseAllUserSessionsUseCase } from './use-case/close-all-user-sessions.use-case';
+import { SessionExpiredPeriodInterface } from './services/session-expired-period-interface';
+import { SessionExpiredPeriodService } from './services/session-expired-period-service';
 
 @Module({
   controllers: [
@@ -94,6 +96,10 @@ import { CloseAllUserSessionsUseCase } from './use-case/close-all-user-sessions.
     {
       provide: LoginResponseFactoryInterface,
       useClass: LoginResponseFactoryService,
+    },
+    {
+      provide: SessionExpiredPeriodInterface,
+      useClass: SessionExpiredPeriodService,
     },
     RegisterByEmailUseCase,
     RegisterByWalletUseCase,
