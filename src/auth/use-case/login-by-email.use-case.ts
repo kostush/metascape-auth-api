@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { GrpcException, SuccessResponse } from 'metascape-common-api';
 import {
   USERS_SERVICE_NAME,
@@ -23,6 +23,7 @@ import { RefreshTokenFactoryInterface } from '../../refresh-token/factory/refres
 import { SessionClient } from 'metascape-session-client';
 import { SessionExpiredPeriodInterface } from '../services/session-expired-period-interface';
 import { status } from '@grpc/grpc-js';
+import { WrongUserCredentialsException } from '../exceptions/wrong-user-credentials.exception';
 
 @Injectable()
 export class LoginByEmailUseCase {
@@ -69,7 +70,7 @@ export class LoginByEmailUseCase {
       );
     } catch (e) {
       if (e instanceof GrpcException && e.code == status.NOT_FOUND) {
-        throw new ForbiddenException('email or password is wrong.');
+        throw new WrongUserCredentialsException('email or password is wrong.');
       }
       throw e;
     }
