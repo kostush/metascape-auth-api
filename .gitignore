@@ -17,6 +17,7 @@ coverage
 
 # Enviroment variables
 .env
+.env*
 
 # Compiled Java class files
 *.class
