@@ -17,7 +17,8 @@ coverage
 
 # Enviroment variables
 .env
-.env*
+.env.dist
+.env.test
 
 # Compiled Java class files
 *.class
